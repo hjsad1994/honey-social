@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Box,
   Flex,
@@ -5,37 +6,46 @@ import {
   Text,
   VStack,
   Avatar,
-  useColorModeValue,
   Menu,
   MenuButton,
   MenuList,
   MenuItem,
-  Portal
+  Portal,
+  useToast
 } from "@chakra-ui/react";
 import { BsInstagram } from "react-icons/bs";
 import { CgMoreO } from "react-icons/cg";
 import "../index.css";
 
 const UserHeader = () => {
-  const cardBg = useColorModeValue("white", "#161617");
-  const shadowColor = useColorModeValue("lg", "dark-lg");
-  const iconColor = useColorModeValue("gray.700", "gray.300");
-  const iconHoverBg = useColorModeValue("gray.100", "#2e2e2e");
+  const toast = useToast();
+  const [activeTab, setActiveTab] = useState("threads");
 
   const copyURL = () => {
-    // const currentURL = window.location.href;
-    // navigator.clipboard.writeText(currentURL).then(() => {
+    const currentURL = window.location.href; // Lấy URL hiện tại
+    navigator.clipboard
+      .writeText(currentURL)
+      .then(() => {
+        toast({
+          title: "Đã sao chép!",
+          description: "URL đã được sao chép vào clipboard.",
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
+      })
+      .catch((error) => {
+        toast({
+          title: "Sao chép thất bại",
+          description: `Không thể sao chép URL: ${error}`,
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+      });
+  };
 
-    // })
-  }
   return (
-    <Box
-      p={6}
-      borderRadius="xl"
-      bg={cardBg}
-      boxShadow={shadowColor}
-      transition="all 0.3s ease"
-    >
       <VStack gap={4} alignItems={"start"}>
         <Flex justifyContent={"space-between"} w={"full"}>
           <Box>
@@ -46,8 +56,8 @@ const UserHeader = () => {
               <Text fontSize={"sm"}>Tran tai</Text>
               <Text
                 fontSize={"xs"}
-                bg={"#1e1e1e"}
-                color={"white"}
+                bg={"gray.dark"} 
+                color={"gray.light"}
                 p={1}
                 borderRadius={"full"}
               >
@@ -56,7 +66,12 @@ const UserHeader = () => {
             </Flex>
           </Box>
           <Box>
-            <Avatar name='Tran Tan Tai' src='/zuck-avatar.png' size={"xl"} />
+            <Avatar name="Tran Tan Tai" src="/zuck-avatar.png" size={
+              {
+                base: "md",
+                md: "xl",
+              }
+            } />
           </Box>
         </Flex>
 
@@ -66,44 +81,53 @@ const UserHeader = () => {
           <Flex gap={2} alignItems={"center"}>
             <Text color={"gray.light"}>99.9K followers</Text>
             <Box w="1" h="1" bg={"gray.light"} borderRadius={"full"} />
-            <Link color={"gray.light"} href="#">meta.com</Link>
+            <Link color={"gray.light"} href="#">
+              meta.com
+            </Link>
           </Flex>
           <Flex gap={2}>
-            <Box
-              className="icon-container"
-              _hover={{
-                bg: iconHoverBg,
-                "& > svg": {
-                  color: "#E1306C"
-                }
-              }}
-            >
-              <BsInstagram size={24} cursor="pointer" color={iconColor} />
+            <Box className="icon-container">
+              <BsInstagram size={24} cursor="pointer" />
             </Box>
 
             <Menu>
-              <MenuButton
-                as={Box}
-                className="icon-container"
-                _hover={{
-                  bg: iconHoverBg,
-                  "& > svg": {
-                    color: "blue.500"
-                  }
-                }}
-              >
+              <MenuButton className="icon-container">
                 <CgMoreO size={24} cursor="pointer" />
               </MenuButton>
               <Portal>
                 <MenuList bg={"gray.dark"}>
-                  <MenuItem bg={"gray.dark"} onClick={copyURL}>Copy Link</MenuItem>
+                  <MenuItem bg={"gray.dark"} onClick={copyURL}>
+                    Copy Link
+                  </MenuItem>
                 </MenuList>
               </Portal>
             </Menu>
           </Flex>
         </Flex>
+
+        <Flex w={"full"}>
+          <Flex
+            flex={1}
+            borderBottom={`1.5px solid ${activeTab === "threads" ? "white" : "gray"}`}
+            justifyContent={"center"}
+            pb={"3"}
+            cursor={"pointer"}
+            onClick={() => setActiveTab("threads")}
+          >
+            <Text fontWeight={"bold"}>Threads</Text>
+          </Flex>
+          <Flex
+            flex={1}
+            borderBottom={`1.5px solid ${activeTab === "reply" ? "white" : "gray"}`}
+            justifyContent={"center"}
+            pb={"3"}
+            cursor={"pointer"}
+            onClick={() => setActiveTab("reply")}
+          >
+            <Text fontWeight={"bold"}>Reply</Text>
+          </Flex>
+        </Flex>
       </VStack>
-    </Box>
   );
 };
 
