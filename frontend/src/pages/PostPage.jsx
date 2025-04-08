@@ -32,7 +32,7 @@ const PostPage = () => {
           border="1px solid"
           borderColor="gray.light"
         >
-          <Image src="/post2.png" w="full" alt="Post image" />
+          <Image src="/post3.png" w="full" alt="Post image" />
         </Box>
       </Link>
 
