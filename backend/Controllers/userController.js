@@ -129,7 +129,7 @@ const updateUser = async (req, res) => {
             return res.status(404).json({ message: "user not found" })
         }
         if (req.params.id !== userId.toString()) {
-            return res.status(400).json({ message: "you are not authorized to update this user" })
+            return res.status(401).json({ message: "you are not authorized to update this user" })
         }
         if (password) {
             const salt = await bcrypt.genSalt(10)
