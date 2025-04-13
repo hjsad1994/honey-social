@@ -1,6 +1,6 @@
 import User from "../models/userModel.js"
 import bcrypt from "bcryptjs"
-import GenerateTokenAndSetCookie from "../utils/helpers/GenerateTokenAndSetCookie.js"
+import generateTokenAndSetCookie from "../utils/helpers/generateTokenAndSetCookie.js"
 
 const getUserProfile = async (req, res) => {
     const { username } = req.params
@@ -38,7 +38,7 @@ const signupUser = async (req, res) => {
         await newUser.save()
 
         if (newUser) {
-            GenerateTokenAndSetCookie(newUser._id, res) // set token in cookie
+            generateTokenAndSetCookie(newUser._id, res) // set token in cookie
             res.status(201).json({
                 _id: newUser._id,
                 name: newUser.name,
