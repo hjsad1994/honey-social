@@ -5,24 +5,31 @@ import App from './App'
 import "./index.css"
 import { mode } from '@chakra-ui/theme-tools'
 import { BrowserRouter } from 'react-router-dom'
+
+// Add this import at the top of main.jsx
+import { Provider } from 'react-redux';
+import store from './store/store'; 
+
 const styles = {
   global: (props) => ({
-    body: mode('gray.800', 'whiteAlpha.900')(props),
-    bg: mode('gray.800', '#101010')(props),
-  })
-}
-const config = {
-  initialColorMode: "Dark",
-  useSystemColorMode: true
+    body: {
+      color: mode("gray.800", "whiteAlpha.900")(props),
+      bg: mode("gray.100", "#101010")(props),
+    },
+  }),
+};
 
-}
+const config = {
+  initialColorMode: "dark",
+  useSystemColorMode: true,
+};
 
 const colors = {
   gray: {
     light: "#616161",
-    dark: "#1e1e1e"
-  }
-}
+    dark: "#1e1e1e",
+  },
+};
 const theme = extendTheme({
   colors,
   styles,
@@ -30,12 +37,16 @@ const theme = extendTheme({
 })
 const rootElement = document.getElementById('root')
 ReactDOM.createRoot(rootElement).render(
+
   <React.StrictMode>
-    <BrowserRouter> {/* cho phep dung url*/}
-      <ChakraProvider theme={theme}>
-        <ColorModeScript initialColorMode={theme.config.initialColorMode} />
-        <App />
-      </ChakraProvider>
-    </BrowserRouter>
+    <Provider store={store}>
+
+      <BrowserRouter> {/* cho phep dung url*/}
+        <ChakraProvider theme={theme}>
+          <ColorModeScript initialColorMode={theme.config.initialColorMode} />
+          <App />
+        </ChakraProvider>
+      </BrowserRouter>
+    </Provider>
   </React.StrictMode>,
 )
