@@ -18,7 +18,7 @@ import {
 import { useState } from "react";
 import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
 import { useDispatch } from "react-redux";
-import { setAuthScreen } from "../reducers/authReducer";
+import { setAuthScreen } from "../reducers/authReducer"; 
 import { setUser } from "../reducers/userReducer";
 import useShowToast from "../hooks/useShowToast";
 
@@ -48,7 +48,7 @@ export default function LoginCard() {
                 return;
             }
             // Store user info in localStorage
-            localStorage.setItem("user-threads", JSON.stringify(data));
+            localStorage.setItem("user-honeys", JSON.stringify(data));
             // Update Redux store
             dispatch(setUser(data));
         } catch (error) {

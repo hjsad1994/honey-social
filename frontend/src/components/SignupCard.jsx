@@ -1,4 +1,3 @@
-'use client'
 
 import {
     Flex,
@@ -21,6 +20,7 @@ import { use, useState } from 'react'
 import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons'
 import { useDispatch } from 'react-redux'
 import { setAuthScreen } from '../reducers/authReducer'
+import useShowToast from './../hooks/useShowToast';
 
 export default function SignupCard() {
     const [showPassword, setShowPassword] = useState(false)
@@ -31,7 +31,7 @@ export default function SignupCard() {
         email: "",
         password: "",
     })
-    const toast = useToast()
+    const showToast = useShowToast()
     const handleSignup = async () => {
         console.log(inputs)
         try {
@@ -44,13 +44,7 @@ export default function SignupCard() {
             })
             const data = await res.json();
             if(data.error) {
-                toast({
-                    title: 'Error',
-                    description: data.error,
-                    status: 'error',
-                    duration: 3000,
-                    isClosable: true,
-                })
+                showToast('Error', data.error, 'error')
                 return
             }
             localStorage.setItem('user-honeys', JSON.stringify(data))
