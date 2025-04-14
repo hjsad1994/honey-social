@@ -3,7 +3,7 @@ import { Button } from '@chakra-ui/react';
 import { logoutUser } from '../reducers/userReducer';
 import useShowToast from './../hooks/useShowToast';
 import { useDispatch, useSelector } from 'react-redux';
-
+import { FiLogOut } from "react-icons/fi";
 const LogoutButton = () => {
     const dispatch = useDispatch();
     const showToast = useShowToast();
@@ -51,7 +51,13 @@ const LogoutButton = () => {
             right={"30px"}
             size={"sm"}
             onClick={handleLogout}
-        >Logout</Button>
+            leftIcon={<FiLogOut
+                size={"20px"}
+            />}
+
+        >
+
+        </Button>
     )
 }
 

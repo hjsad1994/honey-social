@@ -5,6 +5,7 @@ import UserPage from './pages/UserPage'
 import PostPage from './pages/PostPage'
 import HomePage from './pages/HomePage'
 import AuthPage from './pages/AuthPage'
+import UpdateProfilePage from './pages/UpdateProfilePage'
 import Header from './components/Header'
 import LoginCard from './components/LoginCard'
 import LogoutButton from './components/LogoutButton'
@@ -23,6 +24,8 @@ function App() {
       <Routes>
         <Route path="/" element={user ? <HomePage /> : <Navigate to="/auth" />} />
         <Route path="/auth" element={!user ? <AuthPage /> : <Navigate to="/" />} />
+        <Route path="/update" element={user ? <UpdateProfilePage /> : <Navigate to="/auth" />} />
+
         <Route path="/login" element={<LoginCard />} />
         <Route path="/:username" element={<UserPage />} />
         <Route path="/:username/post/:pid" element={<PostPage />} />

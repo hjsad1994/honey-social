@@ -35,14 +35,15 @@ export default function SignupCard() {
     const handleSignup = async () => {
         console.log(inputs)
         try {
+            // CRUD -> Create is POST , Read is GET, Update is PUT, Delete is DELETE
             const res = await fetch('/api/users/signup', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/json', // set content type to JSON
                 },
-                body: JSON.stringify(inputs), 
+                body: JSON.stringify(inputs), // convert to JSON string
             })
-            const data = await res.json();
+            const data = await res.json(); // convert to JSON object
             if(data.error) {
                 showToast('Error', data.error, 'error')
                 return

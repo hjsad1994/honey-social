@@ -48,7 +48,7 @@ export default function LoginCard() {
                 return;
             }
             // Store user info in localStorage
-            localStorage.setItem("user-honeys", JSON.stringify(data));
+            // localStorage.setItem("user-honeys", JSON.stringify(data));
             // Update Redux store
             dispatch(setUser(data));
         } catch (error) {
