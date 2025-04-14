@@ -1,0 +1,1 @@
+console.log("https://res.cloudinary.com/dshxievwb/image/upload/v1744653591/swocj3tfonije7bdyx0j.png".split("/").pop())
