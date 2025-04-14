@@ -11,18 +11,31 @@ import {
   MenuList,
   MenuItem,
   Portal,
-  useToast
+  useToast,
+  Button,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalCloseButton,
+  useColorModeValue
 } from "@chakra-ui/react";
 import { BsInstagram } from "react-icons/bs";
 import { CgMoreO } from "react-icons/cg";
 import "../index.css";
+import { useSelector } from "react-redux";
+import { Link as RouterLink } from "react-router-dom";
+import UpdateProfilePage from "../pages/UpdateProfilePage";
 
-const UserHeader = () => {
+const UserHeader = ({ user }) => {
   const toast = useToast();
-  const [activeTab, setActiveTab] = useState("threads");
+  const currentUser = useSelector((state) => state.user.user);
+  const [activeTab, setActiveTab] = useState("honeys");
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const copyURL = () => {
-    const currentURL = window.location.href; // Lấy URL hiện tại
+    const currentURL = window.location.href;
     navigator.clipboard
       .writeText(currentURL)
       .then(() => {
@@ -46,88 +59,138 @@ const UserHeader = () => {
   };
 
   return (
-      <VStack gap={4} alignItems={"start"}>
-        <Flex justifyContent={"space-between"} w={"full"}>
-          <Box>
-            <Text fontSize={"2xl"} fontWeight={"bold"}>
-              Tran Tan Tai
-            </Text>
-            <Flex gap={2} alignItems={"center"}>
-              <Text fontSize={"sm"}>Tran tai</Text>
-              <Text
-                fontSize={"xs"}
-                bg={"gray.dark"} 
-                color={"gray.light"}
-                p={1}
-                borderRadius={"full"}
-              >
-                threads.net
-              </Text>
-            </Flex>
-          </Box>
-          <Box>
-            <Avatar name="Tran Tan Tai" src="/zuck-avatar.png" size={
-              {
+    <VStack gap={4} alignItems={"start"}>
+      <Flex justifyContent={"space-between"} w={"full"}>
+        <Box>
+          <Text fontSize={"2xl"} fontWeight={"bold"}>
+            {user.name}
+          </Text>
+          <Flex gap={2} alignItems={"center"}>
+            <Text fontSize={"sm"}>{user.username}</Text>
+            {/* <Text
+              fontSize={"xs"}
+              bg={"gray.dark"}
+              color={"gray.light"}
+              p={1}
+              borderRadius={"full"}
+            >
+            honeys.vn 
+            </Text> */}
+          </Flex>
+        </Box>
+        
+        <Box>
+          {user.profilePic && (
+            <Avatar
+              name={user.name}
+              src={user.profilePic}
+              size={{
                 base: "md",
                 md: "xl",
-              }
-            } />
+              }}
+            />
+          )}
+          {!user.profilePic && (
+            <Avatar
+              name={user.name}
+              src="https://bit.ly/broken-link"
+              size={{
+                base: "md",
+                md: "xl",
+              }}
+            />
+          )}
+        </Box>
+      </Flex>
+
+      <Flex justifyContent="space-between" alignItems="center" w="full">
+        {/* Bio nằm bên trái */}
+        <Text>{user.bio}</Text>
+
+        {/* Icons nằm bên phải */}
+        <Flex gap={2}>
+          <Box className="icon-container">
+            <BsInstagram size={24} cursor="pointer" />
           </Box>
+
+          <Menu>
+            <MenuButton className="icon-container">
+              <CgMoreO size={24} cursor="pointer" />
+            </MenuButton>
+            <Portal>
+              <MenuList bg={"gray.dark"}>
+                <MenuItem bg={"gray.dark"} onClick={copyURL}>
+                  Copy Link
+                </MenuItem>
+              </MenuList>
+            </Portal>
+          </Menu>
         </Flex>
-
-        <Text>Vip pro maxxxssssdsadasds.</Text>
-
-        <Flex w={"full"} justifyContent={"space-between"} alignItems="center">
-          <Flex gap={2} alignItems={"center"}>
-            <Text color={"gray.light"}>99.9K followers</Text>
-            <Box w="1" h="1" bg={"gray.light"} borderRadius={"full"} />
-            <Link color={"gray.light"} href="#">
-              meta.com
-            </Link>
-          </Flex>
-          <Flex gap={2}>
-            <Box className="icon-container">
-              <BsInstagram size={24} cursor="pointer" />
-            </Box>
-
-            <Menu>
-              <MenuButton className="icon-container">
-                <CgMoreO size={24} cursor="pointer" />
-              </MenuButton>
-              <Portal>
-                <MenuList bg={"gray.dark"}>
-                  <MenuItem bg={"gray.dark"} onClick={copyURL}>
-                    Copy Link
-                  </MenuItem>
-                </MenuList>
-              </Portal>
-            </Menu>
-          </Flex>
+      </Flex>
+      <Flex w={"full"} justifyContent={"space-between"} alignItems="center">
+        <Flex gap={2} alignItems={"center"}>
+          <Text color={"gray.light"}>{user.followers.length} followers</Text>
+          {/* <Box w="1" h="1" bg={"gray.light"} borderRadius={"full"} /> */}
+          {/* <Link color={"gray.light"} href="#">
+            honeys.vn
+          </Link> */}
         </Flex>
+      </Flex>
+      {currentUser._id === user._id && (
+        <Button
+          w={"full"}
+          size={"sm"}
+          bg={useColorModeValue("white", "#161617")}
+          color={useColorModeValue("black", "white")}
+          borderRadius={"8px"}
+          border="1px solid" // Thêm viền
+          borderColor={"whiteAlpha.300"}
+          _hover={""}
+          onClick={() => setIsModalOpen(true)} // Open modal
+        >
+          Update Profile
+        </Button>
+      )}
 
-        <Flex w={"full"}>
-          <Flex
-            flex={1}
-            borderBottom={`1.5px solid ${activeTab === "threads" ? "white" : "gray"}`}
-            justifyContent={"center"}
-            pb={"3"}
-            cursor={"pointer"}
-            onClick={() => setActiveTab("threads")}
-          >
-            <Text fontWeight={"bold"}>Threads</Text>
-          </Flex>
-          <Flex
-            flex={1}
-            borderBottom={`1.5px solid ${activeTab === "reply" ? "white" : "gray"}`}
-            justifyContent={"center"}
-            pb={"3"}
-            cursor={"pointer"}
-            onClick={() => setActiveTab("reply")}
-          >
-            <Text fontWeight={"bold"}>Reply</Text>
-          </Flex>
+      {/* Modal for Update Profile */}
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} size="xl" >
+        <ModalOverlay
+          bg="blackAlpha.600" // Background overlay
+          backdropFilter="blur(10px)" // Blur effect
+        />
+        <ModalContent bg={useColorModeValue("white", "gray.dark")}>
+          <ModalCloseButton />
+          <ModalBody>
+            <UpdateProfilePage />
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+
+
+
+      <Flex w={"full"}>
+        <Flex
+          flex={1}
+          borderBottom={`1.5px solid ${activeTab === "honeys" ? "white" : "gray"}`}
+          justifyContent={"center"}
+          pb={"3"}
+          cursor={"pointer"}
+          onClick={() => setActiveTab("honeys")}
+        >
+          <Text fontWeight={"bold"}>Honeys</Text>
         </Flex>
-      </VStack>
+        <Flex
+          flex={1}
+          borderBottom={`1.5px solid ${activeTab === "reply" ? "white" : "gray"}`}
+          justifyContent={"center"}
+          pb={"3"}
+          cursor={"pointer"}
+          onClick={() => setActiveTab("reply")}
+        >
+          <Text fontWeight={"bold"}>Reply</Text>
+        </Flex>
+      </Flex>
+    </VStack>
   );
 };
 

@@ -9,11 +9,9 @@ import {
     useColorModeValue,
     Avatar,
     Center,
-    FormErrorMessage,
     Box,
     Spinner,
     Text,
-    Image,
     Skeleton
 } from '@chakra-ui/react'
 import { useState, useEffect } from 'react'
@@ -110,7 +108,7 @@ export default function UpdateProfilePage() {
                 setImageError(false);
                 setTimestamp(Date.now());
             }
-        }, 2000);
+        }, 1000);
         
         return () => clearInterval(intervalId);
     }, []);

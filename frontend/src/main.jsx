@@ -37,7 +37,7 @@ const theme = extendTheme({
 })
 const rootElement = document.getElementById('root')
 ReactDOM.createRoot(rootElement).render(
-
+  // react.strictMode renders the app twice in development mode
   <React.StrictMode>
     <Provider store={store}>
 
