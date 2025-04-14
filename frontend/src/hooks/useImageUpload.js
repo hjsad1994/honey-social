@@ -19,11 +19,11 @@ const useImageUpload = (options = {}) => {
   const [imageBase64, setImageBase64] = useState(null);
   const [fileInfo, setFileInfo] = useState(null);
   const [error, setError] = useState(null);
+  const [cloudinaryUrl, setCloudinaryUrl] = useState(null);
 
   const handleImageChange = (e) => {
     setError(null);
     const file = e.target.files[0];
-    
     if (!file) return;
 
     // Kiểm tra kích thước file
@@ -42,15 +42,22 @@ const useImageUpload = (options = {}) => {
       }
     }
 
-    // Tạo URL xem trước
+    // Tránh rò rỉ bộ nhớ bằng cách revoke URL trước đó nếu có
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
+
+    // Tạo URL xem trước - KHÔNG thêm timestamp vào URL xem trước
     const previewURL = URL.createObjectURL(file);
+    console.log("Preview URL created:", previewURL); // Log để kiểm tra
     setImagePreview(previewURL);
     
     // Lưu thông tin file
     setFileInfo({
       name: file.name,
       size: file.size,
-      type: file.type
+      type: file.type,
+      lastModified: file.lastModified
     });
 
     // Chuyển file thành base64
@@ -70,12 +77,21 @@ const useImageUpload = (options = {}) => {
   // Hàm để reset tất cả state
   const resetImage = () => {
     if (imagePreview) {
-      URL.revokeObjectURL(imagePreview); // Giải phóng bộ nhớ
+      URL.revokeObjectURL(imagePreview.split('?')[0]); // Giải phóng bộ nhớ
     }
     setImagePreview(null);
     setImageBase64(null);
     setFileInfo(null);
+    setCloudinaryUrl(null);
     setError(null);
+  };
+
+  // Hàm cập nhật URL Cloudinary
+  const setCloudinaryData = (url) => {
+    // Thêm timestamp nếu URL chưa có
+    const urlWithTimestamp = url.includes('?') ? url : url + '?t=' + Date.now();
+    setCloudinaryUrl(urlWithTimestamp);
+    return urlWithTimestamp;
   };
 
   return {
@@ -83,8 +99,10 @@ const useImageUpload = (options = {}) => {
     imageBase64,
     fileInfo,
     error,
+    cloudinaryUrl,
     handleImageChange,
     resetImage,
+    setCloudinaryData,
     acceptedTypes
   };
 };
