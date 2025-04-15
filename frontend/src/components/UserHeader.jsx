@@ -160,25 +160,33 @@ const UserHeader = ({ user }) => {
       )}
 
       {/* Modal for Update Profile */}
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} size="xl" >
+      <Modal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        size="xl"
+        closeOnOverlayClick={true} 
+       // Asegúrate de que esta propiedad esté presente y sea true
+      >
         <ModalOverlay
-          bg="blackAlpha.600" // Background overlay
-          backdropFilter="blur(10px)" // Blur effect
+          bg="blackAlpha.600"
+          backdropFilter="blur(10px)"
         />
-        <ModalContent bg={useColorModeValue("white", "gray.dark")}>
-          <ModalCloseButton />
-          <ModalBody>
+        <ModalContent 
+          bg={useColorModeValue("white", "gray.dark")}
+          borderRadius="3xl" 
+          p={0} // Eliminar padding innecesario
+          overflow="hidden" // Para mantener los bordes redondeados si hay contenido que podría sobresalir
+        >
+          {/* ModalCloseButton eliminado */}
+          <ModalBody p={0}> {/* Eliminar padding del cuerpo también */}
             <UpdateProfilePage 
               onUpdateSuccess={() => {
-                setIsModalOpen(false); // Close the modal after successful update
+                setIsModalOpen(false);
               }} 
             />
-
           </ModalBody>
         </ModalContent>
       </Modal>
-
-
 
       <Flex w={"full"}>
         <Flex
