@@ -333,20 +333,6 @@ import {
                       >
                         Tải ảnh lên
                       </Button>
-                      <Button
-                        bg={popoverButtonBg}
-                        color={textColor}
-                        variant="ghost"
-                        justifyContent="flex-start"
-                        fontWeight="normal"
-                        py={3}
-                        borderBottomRadius="lg"
-                        _hover={{ bg: popoverButtonHoverBg, color: textColor }}
-                        _focus={{ outline: 'none' }}
-                        onClick={handleInstagramImportWithClose}
-                      >
-                        Nhập từ Instagram
-                      </Button>
                     </VStack>
                   </PopoverBody>
                 </PopoverContent>
