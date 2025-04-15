@@ -3,37 +3,33 @@ import bcrypt from "bcryptjs"
 import generateTokenAndSetCookie from "../utils/helpers/generateTokenAndSetCookie.js"
 import { v2 as cloudinary } from "cloudinary"
 
+// Simplified function to extract public ID from Cloudinary URL
 const extractPublicIdFromUrl = (url) => {
     if (!url || !url.includes('cloudinary.com')) return null;
     
     try {
-        const urlParts = url.split('/');
-        const uploadIndex = urlParts.findIndex(part => part === 'upload');
+        // Extract the filename part of the URL (after last slash, before any query params)
+        const fullPath = url.split('/').pop().split('?')[0];
         
-        if (uploadIndex === -1) return null;
+        // Remove the file extension if present
+        const publicId = fullPath.includes('.') 
+            ? fullPath.substring(0, fullPath.lastIndexOf('.')) 
+            : fullPath;
+            
+        // Get the folder path from the URL (between /upload/ and filename)
+        const folderMatch = url.match(/\/upload\/(?:v\d+\/)?(.+)\/[^\/]+$/);
+        const folder = folderMatch ? folderMatch[1] : '';
         
-        const pathParts = urlParts.slice(uploadIndex + 1);
+        // Combine folder and filename for complete public_id
+        const completePath = folder ? `${folder}/${publicId}` : publicId;
         
-        if (pathParts.length > 0 && pathParts[0].match(/^v\d+$/)) {
-            pathParts.shift();
-        }
-        
-        let fullPath = pathParts.join('/');
-        
-        if (fullPath.includes('?')) {
-            fullPath = fullPath.split('?')[0];
-        }
-        
-        if (fullPath.includes('.')) {
-            const lastDotIndex = fullPath.lastIndexOf('.');
-            fullPath = fullPath.substring(0, lastDotIndex);
-        }
-        
-        console.log("Extracted public_id:", fullPath);
-        return fullPath;
+        console.log("Extracted public_id:", completePath);
+        return completePath;
     } catch (error) {
-        console.error("Error extracting public_id:", error);
-        return null;
+        console.error("Simple extraction failed, using URL as fallback");
+        // As a fallback, use the URL path after /upload/
+        const fallbackMatch = url.match(/\/upload\/(?:v\d+\/)?(.+)$/);
+        return fallbackMatch ? fallbackMatch[1].split('.')[0] : null;
     }
 }
 
@@ -184,33 +180,30 @@ const updateUser = async (req, res) => {
         
         // Only process the profile picture if it's a valid base64 string that starts with data:image
         // This ensures we only try to upload when an actual new image is provided
-        if (profilePic && profilePic.startsWith('data:image')) {
+        if (user.profilePic && profilePic && profilePic.startsWith('data:image')) {
             try {
-                // Delete previous profile picture if exists
-                if (user.profilePic) {
-                    const publicId = extractPublicIdFromUrl(user.profilePic);
+                const publicId = extractPublicIdFromUrl(user.profilePic);
+                
+                if (publicId) {
+                    console.log(`Deleting previous image: ${publicId}`);
                     
-                    if (publicId) {
-                        console.log(`Removing previous profile image: ${publicId}`);
-                        
-                        // Try to delete the image
-                        try {
-                            const deleteResult = await cloudinary.uploader.destroy(publicId, {
-                                invalidate: true,
-                                resource_type: "image"
-                            });
-                            
-                            // Log result status
-                            if (deleteResult.result !== 'ok') {
-                                console.warn(`Warning: Could not delete previous image: ${JSON.stringify(deleteResult)}`);
-                            }
-                        } catch (deleteError) {
-                            console.error("Error deleting previous profile image:", deleteError.message);
-                            // Continue with upload even if delete failed
-                        }
+                    // Use a simple try-catch for deletion
+                    try {
+                        await cloudinary.uploader.destroy(publicId);
+                        console.log("Previous image deleted successfully");
+                    } catch (err) {
+                        console.log("Could not delete previous image:", err.message);
+                        // Continue with upload even if delete failed
                     }
                 }
-                
+            } catch (err) {
+                console.log("Error in image deletion process:", err.message);
+                // Continue with the update process
+            }
+        }
+        
+        if (profilePic && profilePic.startsWith('data:image')) {
+            try {
                 // Set upload options with unique identifiers
                 const uploadOptions = {
                     folder: "user_avatars",
@@ -223,8 +216,8 @@ const updateUser = async (req, res) => {
                 // Upload new image
                 const uploadedResponse = await cloudinary.uploader.upload(profilePic, uploadOptions);
                 
-                // Add cache-busting parameter
-                profilePic = `${uploadedResponse.secure_url}?t=${Date.now()}`;
+                // Update profilePic without timestamp
+                profilePic = uploadedResponse.secure_url;
                 
                 // Store metadata for response
                 cloudinaryInfo = {
