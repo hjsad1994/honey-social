@@ -19,7 +19,7 @@ import {
     useDisclosure,
     Box,
     IconButton,
-    useColorMode, // Thêm import useColorMode
+    useColorMode, // test
 } from "@chakra-ui/react";
 import { AddIcon } from '@chakra-ui/icons';
 import { BsImage } from 'react-icons/bs';
