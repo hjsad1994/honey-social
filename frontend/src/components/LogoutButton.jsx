@@ -4,10 +4,12 @@ import { logoutUser } from '../reducers/userReducer';
 import useShowToast from './../hooks/useShowToast';
 import { useDispatch, useSelector } from 'react-redux';
 import { FiLogOut } from "react-icons/fi";
+import { useState } from 'react';
 const LogoutButton = () => {
     const dispatch = useDispatch();
     const showToast = useShowToast();
     const user = useSelector(state => state.user.user); // Thêm dòng này để debug
+
 
     const handleLogout = async () => {
 
