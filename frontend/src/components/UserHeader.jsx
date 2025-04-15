@@ -132,7 +132,7 @@ const UserHeader = ({ user, onFollowUpdate, refreshUserData }) => {
           color={useColorModeValue("black", "white")}
           borderRadius={"8px"}
           border="1px solid"
-          borderColor={"whiteAlpha.300"}
+          borderColor={useColorModeValue("black", "whiteAlpha.300")} // Cambiar el color del borde a negro en modo claro
           _hover={{
             bg: useColorModeValue("gray.100", "gray.700"),
           }}
@@ -172,23 +172,35 @@ const UserHeader = ({ user, onFollowUpdate, refreshUserData }) => {
       <Flex w={"full"}>
         <Flex
           flex={1}
-          borderBottom={`1.5px solid ${activeTab === "honeys" ? "white" : "gray"}`}
+          borderBottom={`1px solid ${activeTab === "honeys" ? 
+            useColorModeValue("black", "white") : "transparent"}`} // Subrayado negro en modo claro, blanco en modo oscuro
           justifyContent={"center"}
           pb={"3"}
           cursor={"pointer"}
           onClick={() => setActiveTab("honeys")}
         >
-          <Text fontWeight={"bold"}>Honeys</Text>
+          <Text 
+            fontWeight={"bold"} 
+            color={activeTab === "honeys" ? useColorModeValue("black", "white") : "gray"}
+          >
+            Honeys
+          </Text>
         </Flex>
         <Flex
           flex={1}
-          borderBottom={`1.5px solid ${activeTab === "reply" ? "white" : "gray"}`}
+          borderBottom={`1px solid ${activeTab === "reply" ? 
+            useColorModeValue("black", "white") : "transparent"}`} // Subrayado negro en modo claro, blanco en modo oscuro
           justifyContent={"center"}
           pb={"3"}
           cursor={"pointer"}
           onClick={() => setActiveTab("reply")}
         >
-          <Text fontWeight={"bold"}>Reply</Text>
+          <Text 
+            fontWeight={"bold"} 
+            color={activeTab === "reply" ? useColorModeValue("black", "white") : "gray"}
+          >
+            Reply
+          </Text>
         </Flex>
       </Flex>
     </VStack>
