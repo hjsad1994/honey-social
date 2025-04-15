@@ -2,7 +2,6 @@ import { useState } from "react";
 import {
   Box,
   Flex,
-  Link,
   Text,
   VStack,
   Avatar,
@@ -16,7 +15,6 @@ import {
   Modal,
   ModalOverlay,
   ModalContent,
-  ModalHeader,
   ModalBody,
   ModalCloseButton,
   useColorModeValue
@@ -25,36 +23,29 @@ import { BsInstagram } from "react-icons/bs";
 import { CgMoreO } from "react-icons/cg";
 import "../index.css";
 import { useSelector } from "react-redux";
-import { Link as RouterLink } from "react-router-dom";
 import UpdateProfilePage from "../pages/UpdateProfilePage";
+import useShowToast from './../hooks/useShowToast';
+import useFollowUnfollow from '../hooks/useFollowUnfollow'; // Import hook
 
-const UserHeader = ({ user }) => {
+const UserHeader = ({ user, onFollowUpdate, refreshUserData }) => {
   const toast = useToast();
   const currentUser = useSelector((state) => state.user.user);
   const [activeTab, setActiveTab] = useState("honeys");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const showToast = useShowToast();
+  
+  // Sử dụng hook useFollowUnfollow thay vì quản lý state trong component
+  const { handleFollowToggle, isFollowing, followers, isLoading } = useFollowUnfollow(user, onFollowUpdate);
 
   const copyURL = () => {
     const currentURL = window.location.href;
-    navigator.clipboard
-      .writeText(currentURL)
+    navigator.clipboard.writeText(currentURL)
       .then(() => {
-        toast({
-          title: "Đã sao chép!",
-          description: "URL đã được sao chép vào clipboard.",
-          status: "success",
-          duration: 3000,
-          isClosable: true,
-        });
+        showToast("Thành công", "Đã sao chép liên kết vào clipboard", "success");
       })
       .catch((error) => {
-        toast({
-          title: "Sao chép thất bại",
-          description: `Không thể sao chép URL: ${error}`,
-          status: "error",
-          duration: 3000,
-          isClosable: true,
-        });
+        showToast("Lỗi", "Không thể sao chép liên kết", "error");
+        console.error("Copy failed: ", error);
       });
   };
 
@@ -67,20 +58,11 @@ const UserHeader = ({ user }) => {
           </Text>
           <Flex gap={2} alignItems={"center"}>
             <Text fontSize={"sm"}>{user.username}</Text>
-            {/* <Text
-              fontSize={"xs"}
-              bg={"gray.dark"}
-              color={"gray.light"}
-              p={1}
-              borderRadius={"full"}
-            >
-            honeys.vn 
-            </Text> */}
           </Flex>
         </Box>
-        
+
         <Box>
-          {user.profilePic && (
+          {user.profilePic ? (
             <Avatar
               name={user.name}
               src={user.profilePic}
@@ -89,8 +71,7 @@ const UserHeader = ({ user }) => {
                 md: "xl",
               }}
             />
-          )}
-          {!user.profilePic && (
+          ) : (
             <Avatar
               name={user.name}
               src="https://bit.ly/broken-link"
@@ -104,10 +85,8 @@ const UserHeader = ({ user }) => {
       </Flex>
 
       <Flex justifyContent="space-between" alignItems="center" w="full">
-        {/* Bio nằm bên trái */}
         <Text>{user.bio}</Text>
 
-        {/* Icons nằm bên phải */}
         <Flex gap={2}>
           <Box className="icon-container">
             <BsInstagram size={24} cursor="pointer" />
@@ -127,20 +106,24 @@ const UserHeader = ({ user }) => {
           </Menu>
         </Flex>
       </Flex>
+
+      {currentUser && currentUser._id !== user._id && (
+        <Button
+          size={"sm"}
+          onClick={handleFollowToggle}
+          isLoading={isLoading}
+          loadingText={isFollowing ? "Unfollowing" : "Following"}
+        >
+          {isFollowing ? "Unfollow" : "Follow"}
+        </Button>
+      )}
+
       <Flex w={"full"} justifyContent={"space-between"} alignItems="center">
         <Flex gap={2} alignItems={"center"}>
-          <Text color={"gray.light"}>{user.followers.length} followers</Text>
-          {/* <Box w="1" h="1" bg={"gray.light"} borderRadius={"full"} /> */}
-          {/* <Link color={"gray.light"} href="#">
-            honeys.vn
-          </Link> */}
+          <Text color={"gray.light"}>{followers.length} followers</Text>
         </Flex>
       </Flex>
-      {/* {currentUser?._id === user._id && (
-        <Link as={RouterLink} to='/update'>
-          <Button size={"sm"}>Update Profile</Button>
-        </Link>
-      )} */}
+
       {currentUser && currentUser._id === user._id && (
         <Button
           w={"full"}
@@ -159,26 +142,22 @@ const UserHeader = ({ user }) => {
         </Button>
       )}
 
-      {/* Modal for Update Profile */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} size="xl" >
         <ModalOverlay
-          bg="blackAlpha.600" // Background overlay
-          backdropFilter="blur(10px)" // Blur effect
+          bg="blackAlpha.600"
+          backdropFilter="blur(10px)"
         />
         <ModalContent bg={useColorModeValue("white", "gray.dark")}>
           <ModalCloseButton />
           <ModalBody>
-            <UpdateProfilePage 
+            <UpdateProfilePage
               onUpdateSuccess={() => {
-                setIsModalOpen(false); // Close the modal after successful update
-              }} 
+                setIsModalOpen(false);
+              }}
             />
-
           </ModalBody>
         </ModalContent>
       </Modal>
-
-
 
       <Flex w={"full"}>
         <Flex
