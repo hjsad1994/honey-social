@@ -35,12 +35,16 @@ const createPost = async (req, res) => {
         // Upload ảnh lên Cloudinary nếu có
         if (img && img.startsWith('data:image')) {
             try {
-                // Cấu hình options upload với ID duy nhất
+                // Cấu hình options upload với ID duy nhất và quality settings
                 const uploadOptions = {
                     folder: "honey_posts",
                     public_id: `post_${postedBy}_${Date.now()}`,
                     overwrite: true,
-                    resource_type: "image"
+                    resource_type: "image",
+                    quality: "auto", // Let Cloudinary optimize quality
+                    fetch_format: "auto", // Optimize format automatically 
+                    flags: "preserve_transparency", // Preserve transparency in PNGs
+                    chunk_size: 10000000 // 10MB chunks for better handling of large images
                 };
                 
                 // Upload ảnh lên Cloudinary
@@ -80,6 +84,7 @@ const getPost = async (req, res) => {
     }
 }
 const deletePost = async (req, res) => {
+    let {profilePic} = req.body
     try {
         const post = await Post.findById(req.params.id)
         if (!post) {
@@ -152,7 +157,7 @@ const getFeedPosts = async (req, res) => {
         }
         const following = user.following
         const feedPosts = await Post.find({ postedBy: { $in: following } }).sort({ createdAt: -1 })
-        res.status(200).json({ feedPosts })
+        res.status(200).json( feedPosts )
     } catch (err) {
         res.status(500).json({ error: err.message })
         console.log("error in getFeedPosts controller", err.message)

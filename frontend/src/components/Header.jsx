@@ -59,6 +59,7 @@ const Header = () => {
                         color={colorMode === "dark" ? "white" : "black"}
                         transition="all 0.3s ease"
                         _hover={textHoverStyles}
+
                         px={3}
                         py={1}
                         borderRadius="md"
@@ -85,19 +86,19 @@ const Header = () => {
                 <Box
                     sx={containerStyle}
                     _hover={hoverStyles}
-                    boxSize={50}
+                    boxSize={55}
                     mx="auto"
                 >
                     <Image
                         cursor={'pointer'}
                         alt='logo'
-                        w={7}
+                        w={10}
                         src={colorMode === "dark" ? "/light-logo.svg" : "/dark-logo.svg"}
                         onClick={toggleColorMode}
                         position="relative"
                         zIndex={2}
-                        transition="transform 0.3s ease"
-                        _hover={{ transform: "rotate(180deg)" }}
+                        transition="transform 0.45s ease"
+                        _hover={{ transform: "rotate(360deg)" }}
                     />
                 </Box>
 
