@@ -19,6 +19,7 @@ import {
     useDisclosure,
     Box,
     IconButton,
+    useColorMode, // Thêm import useColorMode
 } from "@chakra-ui/react";
 import { AddIcon } from '@chakra-ui/icons';
 import { BsImage } from 'react-icons/bs';
@@ -34,6 +35,7 @@ const CreatePosts = () => {
     const [remainingChar, setRemainingChar] = useState(MAX_CHARS); // Thêm state để quản lý số ký tự còn lại
     const showToast = useShowToast();
     const [loading, setLoading] = useState(false);
+    const { colorMode } = useColorMode(); // Lấy giá trị colorMode (light hoặc dark)
 
     // Add this line to get the current user from Redux store
     const currentUser = useSelector((state) => state.user.user);
@@ -179,11 +181,50 @@ const CreatePosts = () => {
                 <ModalContent 
                     bg={useColorModeValue("white", "#1E1E1E")} 
                     borderRadius="15px"
+                    width="600px" // Tăng chiều rộng modal
+                    maxWidth="90%" // Đảm bảo không vượt quá màn hình
+                    mx="auto" // Căn giữa theo chiều ngang
+                    my="auto" // Căn giữa theo chiều dọc
+
                 >
-                    <ModalHeader>Tạo bài viết mới</ModalHeader>
-                    <ModalCloseButton />
+                    <ModalHeader display="flex" justifyContent="space-between" alignItems="center" position="relative">
+                        <Button 
+                            variant="ghost" 
+                            onClick={handleCloseModal} 
+                            fontSize="sm"
+                            position="absolute"
+                            left="0"
+                            _hover={{}} 
+                        >
+                            Hủy
+                        </Button>
+                        <Text fontSize="lg" fontWeight="bold" textAlign="center" flex="1">
+                            Tạo bài viết mới
+                        </Text>
+                        {/* <Button 
+                            variant="ghost" 
+                            fontSize="sm"
+                            position="absolute"
+                            right="0"
+                            _hover={{}}
+                            onClick={() => console.log("Xem thêm được nhấn!")}
+                        >
+                            Xem thêm
+                        </Button> */}
+                    </ModalHeader>
                     
                     <ModalBody pb={6} borderTop="1px solid" borderColor={useColorModeValue("gray.300", "gray.light")}>
+                        <Flex alignItems="center" gap={3} mb={4}>
+                            <Image
+                                src={currentUser?.profilePic || "https://bit.ly/broken-link"} // Hiển thị avatar
+                                alt={currentUser?.name || "User"}
+                                borderRadius="full"
+                                boxSize="40px"
+                            />
+                            <Text fontSize="md" fontWeight="bold">
+                                {currentUser?.name || "Người dùng"} {/* Hiển thị tên */}
+                            </Text>
+                        </Flex>
                         <FormControl>
                             <Textarea
                                 placeholder="Có gì mới?"
@@ -240,20 +281,36 @@ const CreatePosts = () => {
                     <ModalFooter borderTop="1px solid" borderColor={useColorModeValue("gray.300", "gray.light")}>
                         <Flex width="100%" justifyContent="space-between" alignItems="center">
                             <IconButton
-                                bg={useColorModeValue("gray.300", "gray.light")}
+                                // bg={colorMode === "dark" ? "rgba(80, 80, 80, 0.3)" : "rgba(180, 180, 180, 0.3)"} // Màu nền thay đổi theo chế độ
+                                color={useColorModeValue("black", "white")} // Màu chữ thay đổi theo chế độ
                                 aria-label="Upload image"
                                 icon={<BsImage size="20px" />}
                                 variant="ghost"
-                                colorScheme="blue"
                                 onClick={() => imageInputRef.current.click()}
+                                _hover={{
+                                    bg: colorMode === "dark" ? "rgba(80, 80, 80, 0.3)" : "rgba(180, 180, 180, 0.3)",
+                                    borderRadius: "10px",
+                                    transition:"all 0.2s ease",
+                                    transform: "translateY(-2px)",
+                                    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                                    zIndex: 1
+                                }}
                             />
                             <Button 
                                 colorScheme="blue" 
                                 px={6}
                                 borderRadius="full"
                                 onClick={HandleCreatePost}
-                                // isDisabled={!postText.trim() && !imagePreview}
+                                isDisabled={!postText.trim() && !imagePreview} // Ẩn mờ nút nếu không có nội dung hoặc ảnh
                                 isLoading={loading}
+                                opacity={!postText.trim() && !imagePreview ? 0.5 : 1} // Thêm hiệu ứng mờ
+                                bg="white" // Màu nền trắng
+                                color="black" // Chữ màu đen
+                                border="1px solid" // Thêm viền
+                                borderColor="gray.300" // Màu viền
+                                _hover={{
+                                    bg: "gray.100", // Màu nền khi hover
+                                }}
                             >
                                 Đăng
                             </Button>
