@@ -27,7 +27,7 @@ import UpdateProfilePage from "../pages/UpdateProfilePage";
 import useShowToast from './../hooks/useShowToast';
 import useFollowUnfollow from '../hooks/useFollowUnfollow'; // Import hook
 
-const UserHeader = ({ user, onFollowUpdate, refreshUserData }) => {
+const UserHeader = ({ user, onFollowUpdate }) => {
   const toast = useToast();
   const currentUser = useSelector((state) => state.user.user);
   const [activeTab, setActiveTab] = useState("honeys");

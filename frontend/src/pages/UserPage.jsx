@@ -13,8 +13,10 @@ const UserPage = () => {
   const cardBg = useColorModeValue("white", "#161617");
   const shadowColor = useColorModeValue("lg", "dark-lg");
 
+  const [loading, setLoading] = useState(true);
   // Tạo hàm refresh user data
   const refreshUserData = useCallback(async () => {
+    setLoading(true); // Set loading to true before fetching
     try {
       const res = await fetch(`/api/users/profile/${username}`);
       const data = await res.json();
@@ -27,6 +29,8 @@ const UserPage = () => {
       setUser(data.user);
     } catch (error) {
       showToast('Error', error.message, 'error');
+    } finally {
+      setLoading(false); // Set loading to false regardless of success or error
     }
   }, [username, showToast]);
 
@@ -42,13 +46,14 @@ const UserPage = () => {
     setUser(updatedUser);
   }, []);
 
-  if (!user) {
+  if (loading) {
     return (
       <Flex justifyContent="center" alignItems="center" height="100vh">
         <Spinner size="xl" />
       </Flex>
     );
   }
+  if (!user) return <h1>User not found</h1>
 
   return (
     <Box
