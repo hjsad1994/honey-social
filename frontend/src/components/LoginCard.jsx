@@ -47,8 +47,6 @@ export default function LoginCard() {
                 showToast("Error", data.error, "error");
                 return;
             }
-            // Store user info in localStorage
-            // localStorage.setItem("user-honeys", JSON.stringify(data));
             // Update Redux store
             dispatch(setUser(data));
         } catch (error) {
