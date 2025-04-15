@@ -141,17 +141,19 @@ const UserHeader = ({ user }) => {
           <Button size={"sm"}>Update Profile</Button>
         </Link>
       )} */}
-      {currentUser._id === user._id && (
+      {currentUser && currentUser._id === user._id && (
         <Button
           w={"full"}
           size={"sm"}
           bg={useColorModeValue("white", "#161617")}
           color={useColorModeValue("black", "white")}
           borderRadius={"8px"}
-          border="1px solid" // Thêm viền
+          border="1px solid"
           borderColor={"whiteAlpha.300"}
-          _hover={""}
-          onClick={() => setIsModalOpen(true)} // Open modal
+          _hover={{
+            bg: useColorModeValue("gray.100", "gray.700"),
+          }}
+          onClick={() => setIsModalOpen(true)}
         >
           Update Profile
         </Button>

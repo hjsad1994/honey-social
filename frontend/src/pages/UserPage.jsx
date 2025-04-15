@@ -20,9 +20,8 @@ const UserPage = () => {
                 return;
             }
 
-            // Cập nhật Redux và localStorage với dữ liệu mới
+            // Only set the user state, DON'T update localStorage
             setUser(data.user);
-            localStorage.setItem("user-honeys", JSON.stringify(data.user));
         } catch (error) {
             showToast('Error', error.message, 'error');
         }

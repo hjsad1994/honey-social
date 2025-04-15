@@ -1,4 +1,6 @@
+
 import { useState } from 'react';
+import { Avatar } from '@chakra-ui/react';
 
 /**
  * Hook xử lý upload và xem trước hình ảnh
@@ -88,10 +90,10 @@ const useImageUpload = (options = {}) => {
 
   // Hàm cập nhật URL Cloudinary
   const setCloudinaryData = (url) => {
-    // Thêm timestamp nếu URL chưa có
-    const urlWithTimestamp = url.includes('?') ? url : url + '?t=' + Date.now();
-    setCloudinaryUrl(urlWithTimestamp);
-    return urlWithTimestamp;
+    // Get the clean URL without any parameters
+    const cleanUrl = url.split('?')[0];
+    setCloudinaryUrl(cleanUrl);
+    return cleanUrl;
   };
 
   return {
@@ -106,5 +108,14 @@ const useImageUpload = (options = {}) => {
     acceptedTypes
   };
 };
+
+// Example usage in your component when displaying images
+function getImageUrlWithCacheBuster(url) {
+  if (!url) return "";
+  return `${url}?t=${Date.now()}`;
+}
+
+// Then use it like this:
+{/* <Avatar src={getImageUrlWithCacheBuster(user.profilePic)} /> */}
 
 export default useImageUpload;

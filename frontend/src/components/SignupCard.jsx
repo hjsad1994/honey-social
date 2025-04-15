@@ -21,6 +21,7 @@ import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons'
 import { useDispatch } from 'react-redux'
 import { setAuthScreen } from '../reducers/authReducer'
 import useShowToast from './../hooks/useShowToast';
+import { setUser } from '../reducers/userReducer'; // Add this import
 
 export default function SignupCard() {
     const [showPassword, setShowPassword] = useState(false)
