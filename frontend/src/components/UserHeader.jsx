@@ -136,6 +136,11 @@ const UserHeader = ({ user }) => {
           </Link> */}
         </Flex>
       </Flex>
+      {/* {currentUser?._id === user._id && (
+        <Link as={RouterLink} to='/update'>
+          <Button size={"sm"}>Update Profile</Button>
+        </Link>
+      )} */}
       {currentUser._id === user._id && (
         <Button
           w={"full"}
@@ -161,7 +166,12 @@ const UserHeader = ({ user }) => {
         <ModalContent bg={useColorModeValue("white", "gray.dark")}>
           <ModalCloseButton />
           <ModalBody>
-            <UpdateProfilePage />
+            <UpdateProfilePage 
+              onUpdateSuccess={() => {
+                setIsModalOpen(false); // Close the modal after successful update
+              }} 
+            />
+
           </ModalBody>
         </ModalContent>
       </Modal>

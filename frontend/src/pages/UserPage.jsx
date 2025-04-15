@@ -11,20 +11,25 @@ const UserPage = () => {
   const showToast = useShowToast()
   useEffect(() => {
     const getUser = async () => {
-      try {
-        const res = await fetch(`/api/users/profile/${username}`)
-        const data = await res.json();
-        if (data.error) {
-          showToast('Error', data.error, 'error')
-          return
+        try {
+            const res = await fetch(`/api/users/profile/${username}`);
+            const data = await res.json();
+
+            if (data.error) {
+                showToast('Error', data.error, 'error');
+                return;
+            }
+
+            // Cập nhật Redux và localStorage với dữ liệu mới
+            setUser(data.user);
+            localStorage.setItem("user-honeys", JSON.stringify(data.user));
+        } catch (error) {
+            showToast('Error', error.message, 'error');
         }
-        setUser(data.user)
-      } catch (error) {
-        showToast('Error', error, 'error')
-      }
-    }
+    };
+
     getUser();
-  }, [username, showToast]);
+}, [username, showToast]);
 
   if (!user) return null;
 
