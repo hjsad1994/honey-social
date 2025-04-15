@@ -19,7 +19,7 @@ const Header = () => {
         }
     }, [location.pathname, currentUser]);
 
-    // Active icon styles
+    // Active icon style
     const activeIconStyles = {
         borderRadius: "10px",
         p: 2,
