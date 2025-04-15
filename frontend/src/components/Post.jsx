@@ -4,7 +4,7 @@ import { Flex, Avatar, Box, Text, Image, Spinner } from '@chakra-ui/react';
 import { BsThreeDots } from 'react-icons/bs';
 import Actions from './Actions';
 import useShowToast from '../hooks/useShowToast';
-
+import {formatDistanceToNow} from 'date-fns'
 const Post = ({ post, postedBy }) => {
     const [liked, setLiked] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -104,10 +104,10 @@ const Post = ({ post, postedBy }) => {
                             <Image src="/verified.png" w={4} h={4} ml={1} />
                         </Flex>
                         <Flex gap={4} alignContent="center">
-                            <Text fontStyle="sm" color="gray.light">
-                                {new Date(post.createdAt).toLocaleDateString()}
+                            <Text fontSize="xs" width={20} textAlign={'right'} color="gray.light">
+                                {formatDistanceToNow(new Date(post.createdAt))}
                             </Text>
-                            <BsThreeDots />
+                            {/* <BsThreeDots /> */}
                         </Flex>
                     </Flex>
 
