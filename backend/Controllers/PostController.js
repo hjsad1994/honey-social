@@ -1,30 +1,65 @@
 import User from "../models/userModel.js"
 import Post from "../models/postModel.js"
-
+import { v2 as cloudinary } from "cloudinary"
 
 const createPost = async (req, res) => {
     try {
         const { postedBy, text, img } = req.body
-        if (!postedBy || !text) {
-            return res.status(400).json({ error: "postedBy and text are required" })
+        
+        // Kiểm tra xem có ít nhất text hoặc img
+        if (!postedBy || (!text && !img)) {
+            return res.status(400).json({ error: "Cần có nội dung hoặc hình ảnh để tạo bài viết" })
         }
+        
         const user = await User.findById(postedBy)
         if (!user) {
             return res.status(404).json({ error: "user not found" })
         }
+        
         if (user._id.toString() !== req.user._id.toString()) {
             return res.status(400).json({ error: "user not authorized to create post" })
         }
+        
+        // Kiểm tra độ dài văn bản nếu có
         const maxLength = 500
-        if (text.length > maxLength) {
+        if (text && text.length > maxLength) {
             return res.status(400).json({ error: `text should be less than ${maxLength} characters` })
         }
-        const newPost = await Post.create({
+
+        // Chuẩn bị dữ liệu bài viết
+        const postData = {
             postedBy,
-            text,
-            img,
-        })
+            text: text || "",
+        }
+
+        // Upload ảnh lên Cloudinary nếu có
+        if (img && img.startsWith('data:image')) {
+            try {
+                // Cấu hình options upload với ID duy nhất
+                const uploadOptions = {
+                    folder: "honey_posts",
+                    public_id: `post_${postedBy}_${Date.now()}`,
+                    overwrite: true,
+                    resource_type: "image"
+                };
+                
+                // Upload ảnh lên Cloudinary
+                const uploadedResponse = await cloudinary.uploader.upload(img, uploadOptions);
+                
+                // Lưu URL Cloudinary vào postData
+                postData.img = uploadedResponse.secure_url;
+                
+                console.log("Image uploaded to Cloudinary:", uploadedResponse.secure_url);
+            } catch (cloudinaryError) {
+                console.error("Cloudinary upload failed:", cloudinaryError);
+                return res.status(500).json({ error: "Failed to upload image" });
+            }
+        }
+
+        // Tạo và lưu bài viết
+        const newPost = await Post.create(postData)
         await newPost.save()
+        
         res.status(201).json({ error: "post created successfully", post: newPost })
     } catch (err) {
         res.status(500).json({ error: err.message })
