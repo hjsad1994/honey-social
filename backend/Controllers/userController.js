@@ -155,11 +155,7 @@ const followUnfollowUser = async (req, res) => {
         console.log("error in followUnfollowUser controller", err.message)
     }
 }
-/**
- * Updates user profile information
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- */
+
 const updateUser = async (req, res) => {
     const { name, email, username, password, bio } = req.body;
     let { profilePic } = req.body;
@@ -186,8 +182,9 @@ const updateUser = async (req, res) => {
         // Track Cloudinary upload metadata
         let cloudinaryInfo = null;
         
-        // Handle profile picture upload
-        if (profilePic) {
+        // Only process the profile picture if it's a valid base64 string that starts with data:image
+        // This ensures we only try to upload when an actual new image is provided
+        if (profilePic && profilePic.startsWith('data:image')) {
             try {
                 // Delete previous profile picture if exists
                 if (user.profilePic) {
@@ -244,6 +241,9 @@ const updateUser = async (req, res) => {
                 console.error("Cloudinary upload failed:", cloudinaryError.message);
                 return res.status(500).json({ error: "Failed to upload profile image" });
             }
+        } else {
+            // If no new valid profilePic is provided, keep the existing one
+            profilePic = user.profilePic;
         }
 
         // Update user fields with provided values or keep existing
@@ -251,11 +251,7 @@ const updateUser = async (req, res) => {
         user.email = email || user.email;
         user.username = username || user.username;
         user.bio = bio || user.bio;
-        
-        // Only update profile picture if a new one was uploaded
-        if (profilePic) {
-            user.profilePic = profilePic;
-        }
+        user.profilePic = profilePic; // Update profilePic only if it has changed
         
         // Save updated user
         user = await user.save();
@@ -268,8 +264,8 @@ const updateUser = async (req, res) => {
         });
     } catch (err) {
         console.log("Error in updateUser controller:", err.message);
-        res.status(500).json({ error: "Failed to update profile" });
+        res.status(500).json({ error: err.message || "Failed to update profile" });
     }
-}
+};
 
 export { signupUser, loginUser, logoutUser, followUnfollowUser, updateUser, getUserProfile }
