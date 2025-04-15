@@ -142,18 +142,27 @@ const UserHeader = ({ user, onFollowUpdate, refreshUserData }) => {
         </Button>
       )}
 
-      {/* Modal for Update Profile */}
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} size="xl" >
+      {/* Modal for Update Profile - Keep only this one */}
+      <Modal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        size="xl"
+        closeOnOverlayClick={true}
+      >
         <ModalOverlay
           bg="blackAlpha.600"
           backdropFilter="blur(10px)"
         />
-        <ModalContent bg={useColorModeValue("white", "gray.dark")}>
-          <ModalCloseButton />
-          <ModalBody>
+        <ModalContent 
+          bg={useColorModeValue("white", "gray.dark")}
+          borderRadius="3xl" 
+          p={0}
+          overflow="hidden"
+        >
+          <ModalBody p={0}>
             <UpdateProfilePage 
               onUpdateSuccess={() => {
-                setIsModalOpen(false); // Close the modal after successful update
+                setIsModalOpen(false);
               }} 
             />
           </ModalBody>
