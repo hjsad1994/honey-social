@@ -239,35 +239,39 @@ const Comment = ({ reply, postId, onDeleteReply }) => {
                         <Center position="absolute" top="0" left="0" width="100%" height="100%">
                             <Spinner size="xs" color="gray.400" thickness="2px" />
                         </Center>
+                        
                     )}
                     <Avatar 
                         src={avatarSrc} 
                         size="sm" 
                         name={username}
+
                         onLoad={handleAvatarLoad}
                         onError={handleAvatarError}
                         visibility={isAvatarLoading ? "hidden" : "visible"}
-                    />
+                    />  
+
+                    
                 </Box>
                 <Flex gap={1} w="full" flexDirection="column">
                     <Flex w="full" justifyContent="space-between" alignItems="center">
-                        <Text fontSize="sm" fontWeight="bold">{username}</Text>
+                        <Flex alignItems="center" gap={2}>
+                            <Text fontSize="sm" fontWeight="bold">{username}</Text>
+                            <Text fontSize="sm" color="gray.light">{formatTimeCompact(commentTime)}</Text>
+                        </Flex>
                         <Flex gap={2} alignItems="center">
-                            <Text fontSize="sm" color="gray.light">
-                                {formatTimeCompact(commentTime)}
-                            </Text>
-                            <Box>
-                                <Menu>
-                                    <MenuButton>
-                                        <BsThreeDots />
-                                    </MenuButton>
-                                    <Portal>
-                                        <MenuList
-                                            bg={menuListBg}
-                                            borderColor={menuListBorder}
-                                            boxShadow="md"
-                                        >
-                                            {isAuthor && (
+                            {isAuthor && (
+                                <Box>
+                                    <Menu>
+                                        <MenuButton>
+                                            <BsThreeDots />
+                                        </MenuButton>
+                                        <Portal>
+                                            <MenuList
+                                                bg={menuListBg}
+                                                borderColor={menuListBorder}
+                                                boxShadow="md"
+                                            >
                                                 <MenuItem
                                                     bg={menuItemBg}
                                                     color="red.500"
@@ -277,11 +281,11 @@ const Comment = ({ reply, postId, onDeleteReply }) => {
                                                 >
                                                     {isDeleting ? "Đang xoá..." : "Xoá bình luận"}
                                                 </MenuItem>
-                                            )}
-                                        </MenuList>
-                                    </Portal>
-                                </Menu>
-                            </Box>
+                                            </MenuList>
+                                        </Portal>
+                                    </Menu>
+                                </Box>
+                            )}
                         </Flex>
                     </Flex>
                     <Text>{text}</Text>
