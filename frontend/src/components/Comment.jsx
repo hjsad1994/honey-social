@@ -18,7 +18,9 @@ import {
     Button,
     Portal,
     useDisclosure,
-    useColorModeValue
+    useColorModeValue,
+    Spinner,
+    Center
 } from '@chakra-ui/react';
 import { BsThreeDots } from 'react-icons/bs';
 import { useSelector, useDispatch } from 'react-redux';
@@ -26,12 +28,10 @@ import useShowToast from '../hooks/useShowToast';
 import { updatePost, removeReply } from '../reducers/postReducer';
 
 const Comment = ({ reply, postId, onDeleteReply }) => {
-    // Kiểm tra props reply có hợp lệ hay không
     if (!reply) return null;
 
     const dispatch = useDispatch();
     const { text, username, userProfilePic, likes = [], userId = "", _id: replyId } = reply;
-    // Lưu timestamp vào state để không tạo mới đối tượng Date mỗi lần render
     const [commentTime] = useState(reply.createdAt || new Date());
 
     const [isLiked, setIsLiked] = useState(false);
@@ -41,7 +41,6 @@ const Comment = ({ reply, postId, onDeleteReply }) => {
     const currentUser = useSelector(state => state.user.user);
     const showToast = useShowToast();
     
-    // Track if component is mounted
     const isMounted = useRef(true);
     
     useEffect(() => {
@@ -50,10 +49,8 @@ const Comment = ({ reply, postId, onDeleteReply }) => {
         };
     }, []);
 
-    // Sử dụng modal để hiển thị xác nhận xoá
     const { isOpen, onOpen, onClose } = useDisclosure();
 
-    // Các giá trị dùng cho theme
     const menuListBg = useColorModeValue("white", "#1E1E1E");
     const menuListBorder = useColorModeValue("gray.200", "gray.700");
     const menuItemBg = useColorModeValue("white", "#1E1E1E");
@@ -62,10 +59,8 @@ const Comment = ({ reply, postId, onDeleteReply }) => {
     const cancelBtnBg = useColorModeValue("gray.200", "whiteAlpha.200");
     const cancelBtnHoverBg = useColorModeValue("gray.300", "whiteAlpha.300");
 
-    // Xác định xem người dùng hiện tại có phải tác giả của bình luận hay không
     const isAuthor = currentUser && userId === currentUser._id;
 
-    // Hàm định dạng thời gian hiển thị dưới dạng compact
     const formatTimeCompact = (date) => {
         try {
             if (!date) return "";
@@ -92,7 +87,6 @@ const Comment = ({ reply, postId, onDeleteReply }) => {
         }
     };
 
-    // Kiểm tra nếu người dùng hiện tại đã like bình luận
     useEffect(() => {
         if (currentUser && likes) {
             setIsLiked(likes.includes(currentUser._id));
@@ -100,7 +94,52 @@ const Comment = ({ reply, postId, onDeleteReply }) => {
         }
     }, [currentUser, likes]);
 
-    // Xử lý thích/bỏ thích bình luận
+    const [userProfile, setUserProfile] = useState(null);
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            if (userId) {
+                try {
+                    const res = await fetch(`/api/users/profile/${userId}`);
+                    const data = await res.json();
+                    if (!data.error) {
+                        setUserProfile(data.user);
+                    }
+                } catch (error) {
+                    console.error("Không thể lấy thông tin người dùng:", error);
+                }
+            }
+        };
+        
+        fetchUserData();
+    }, [userId]);
+
+    const [isAvatarLoading, setIsAvatarLoading] = useState(true);
+    const [avatarError, setAvatarError] = useState(false);
+
+    const getAvatarSrc = () => {
+        return userProfilePic || 
+               (userProfile?.profilePic) || 
+               (currentUser && userId === currentUser._id ? currentUser.profilePic : null) ||
+               "/tai.png";
+    };
+    
+    const avatarSrc = getAvatarSrc();
+    
+    const handleAvatarLoad = () => {
+        setIsAvatarLoading(false);
+    };
+    
+    const handleAvatarError = () => {
+        setIsAvatarLoading(false);
+        setAvatarError(true);
+    };
+    
+    useEffect(() => {
+        setIsAvatarLoading(true);
+        setAvatarError(false);
+    }, [avatarSrc]);
+
     const handleLike = async () => {
         if (!currentUser) {
             showToast("Error", "Bạn phải đăng nhập để thích bình luận", "error");
@@ -121,12 +160,10 @@ const Comment = ({ reply, postId, onDeleteReply }) => {
 
             const data = await res.json();
             if (data.error && data.error !== "reply liked successfully" && data.error !== "reply unliked successfully") {
-                // Nếu gặp lỗi, hoàn tác UI
                 setIsLiked(wasLiked);
                 setLikesCount(prev => wasLiked ? prev + 1 : prev - 1);
                 showToast("Error", data.error, "error");
             } else {
-                // Sau 300ms gọi API cập nhật lại post trong Redux store
                 setTimeout(() => {
                     fetch(`/api/posts/${postId}`)
                         .then(res => res.json())
@@ -147,7 +184,6 @@ const Comment = ({ reply, postId, onDeleteReply }) => {
         }
     };
 
-    // Xác nhận xoá bình luận
     const confirmDelete = (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -160,21 +196,17 @@ const Comment = ({ reply, postId, onDeleteReply }) => {
         onOpen();
     };
 
-    // Xử lý xoá bình luận với optimistic update
     const handleDeleteComment = async () => {
         setIsDeleting(true);
         
-        // Đóng modal trước
         onClose();
         
-        // QUAN TRỌNG: Đảm bảo callback được gọi TRƯỚC tiên để cập nhật UI ngay lập tức
         if (onDeleteReply) {
             console.log(`Component Comment gọi callback onDeleteReply với ID: ${replyId}`);
             onDeleteReply(replyId);
         }
         
         try {
-            // Sau đó gọi API
             const res = await fetch(`/api/posts/${postId}/replies/${replyId}`, {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },
@@ -182,7 +214,6 @@ const Comment = ({ reply, postId, onDeleteReply }) => {
 
             const data = await res.json();
             
-            // Redux dispatch không quan trọng cho UI (nó chỉ đồng bộ state)
             if (!data.error || data.error === "reply deleted successfully") {
                 dispatch(removeReply({ postId, replyId }));
                 showToast("Success", "Bình luận đã được xóa", "success");
@@ -200,15 +231,24 @@ const Comment = ({ reply, postId, onDeleteReply }) => {
         }
     };
 
-    // Xử lý src cho avatar với các trường hợp fallback
-    const avatarSrc = userProfilePic ||
-        (currentUser && username === currentUser.username ? currentUser.profilePic : null) ||
-        "/tai.png";
-
     return (
         <>
             <Flex gap={4} my={2} w="full">
-                <Avatar src={avatarSrc} size="sm" name={username} />
+                <Box position="relative" width="32px" height="32px">
+                    {isAvatarLoading && (
+                        <Center position="absolute" top="0" left="0" width="100%" height="100%">
+                            <Spinner size="xs" color="gray.400" thickness="2px" />
+                        </Center>
+                    )}
+                    <Avatar 
+                        src={avatarSrc} 
+                        size="sm" 
+                        name={username}
+                        onLoad={handleAvatarLoad}
+                        onError={handleAvatarError}
+                        visibility={isAvatarLoading ? "hidden" : "visible"}
+                    />
+                </Box>
                 <Flex gap={1} w="full" flexDirection="column">
                     <Flex w="full" justifyContent="space-between" alignItems="center">
                         <Text fontSize="sm" fontWeight="bold">{username}</Text>
@@ -277,7 +317,6 @@ const Comment = ({ reply, postId, onDeleteReply }) => {
                 </Flex>
             </Flex>
 
-            {/* Modal xác nhận xoá */}
             <Modal isOpen={isOpen} onClose={onClose} isCentered>
                 <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(5px)" />
                 <ModalContent bg={modalContentBg} borderRadius="lg" mx={4}>

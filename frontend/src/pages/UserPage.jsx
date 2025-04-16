@@ -208,32 +208,32 @@ const UserPage = () => {
   const { username } = useParams();
   const showToast = useShowToast();
   const dispatch = useDispatch();
-
+  
   const cardBg = useColorModeValue("white", "#161617");
   const shadowColor = useColorModeValue("lg", "dark-lg");
 
   const [loading, setLoading] = useState(true);
   const [fetchingPosts, setFetchingPosts] = useState(true);
-
+  
   const allPosts = useSelector((state) => state.posts.posts);
   const userPostsMap = useSelector((state) => state.posts.userPosts);
   const currentUser = useSelector((state) => state.user.user);
-
+  
   const getUserPosts = () => {
     if (!user) return [];
-
+    
     const cachedPosts = userPostsMap[user._id] || [];
     const recentUserPosts = allPosts.filter(
       (post) => post.postedBy === user._id || post.postedBy?._id === user._id
     );
-
+    
     const combinedPosts = [...recentUserPosts];
     cachedPosts.forEach((cachedPost) => {
       if (!combinedPosts.some((post) => post._id === cachedPost._id)) {
         combinedPosts.push(cachedPost);
       }
     });
-
+    
     return combinedPosts;
   };
 
@@ -260,20 +260,20 @@ const UserPage = () => {
 
   const fetchUserPosts = useCallback(async () => {
     if (!user) return;
-
+    
     setFetchingPosts(true);
     try {
       const res = await fetch(`/api/posts/user/${username}`);
       const data = await res.json();
-
+      
       if (data.error) {
         showToast("Error", data.error, "error");
         return;
       }
-
-      dispatch(setUserPosts({
-        userId: user._id,
-        posts: data
+      
+      dispatch(setUserPosts({ 
+        userId: user._id, 
+        posts: data 
       }));
     } catch (error) {
       showToast("Error", error.message, "error");
@@ -322,12 +322,12 @@ const UserPage = () => {
 
   return (
     <Box p={6} borderRadius="xl" bg={cardBg} boxShadow={shadowColor} transition="all 0.3s ease">
-      <UserHeader
-        user={user}
+      <UserHeader 
+        user={user} 
         onFollowUpdate={handleFollowUpdate}
-        refreshUserData={fetchUserData}
+        refreshUserData={fetchUserData} 
       />
-
+      
       {fetchingPosts ? (
         <Flex justifyContent="center" py={10}>
           <Spinner size="md" />
