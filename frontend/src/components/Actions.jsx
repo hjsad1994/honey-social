@@ -1,16 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Flex, Text, Box } from '@chakra-ui/react';
-import { useSelector } from 'react-redux';
+import { 
+    Flex, Text, Box, Modal, ModalOverlay, ModalContent, 
+    ModalHeader, ModalBody, ModalFooter, Button, FormControl,
+    Textarea, useDisclosure, useColorModeValue, Image
+} from '@chakra-ui/react';
+import { useSelector, useDispatch } from 'react-redux';
 import useShowToast from '../hooks/useShowToast';
 
 const Actions = ({ post }) => {
     const [liked, setLiked] = useState(false);
     const [likesCount, setLikesCount] = useState(post?.likes?.length || 0);
-    const [isLiking, setIsLiking] = useState(false); // New loading state
+    const [isLiking, setIsLiking] = useState(false);
+    const [reply, setReply] = useState("");
+    const [isReplying, setIsReplying] = useState(false);
+    const { isOpen, onOpen, onClose } = useDisclosure();
+    
     const showToast = useShowToast();
     const user = useSelector((state) => state.user.user);
+    const dispatch = useDispatch();
 
-    // Initialize liked state and likes count
     useEffect(() => {
         if (post && user && post.likes) {
             setLiked(post.likes.includes(user._id));
@@ -18,15 +26,51 @@ const Actions = ({ post }) => {
         }
     }, [post, user]);
 
+    const handleReply = async () => {
+        if (!user) return showToast("Error", "You must be logged in to reply to a post", "error");
+        if (isReplying) return;
+        if (!reply.trim()) return showToast("Error", "Reply cannot be empty", "error");
+        
+        setIsReplying(true);
+        try {
+            const res = await fetch(`/api/posts/reply/${post._id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ text: reply }),
+            });
+            const data = await res.json();
+            
+            if (data.error && data.error !== "reply added successfully") {
+                showToast("Error", data.error, "error");
+                return;
+            }
+
+            post.replies = [...post.replies, {
+                userId: user._id,
+                text: reply,
+                username: user.username,
+                userProfilePic: user.profilePic
+            }];
+            
+            showToast("Success", "Reply posted successfully", "success");
+            onClose();
+            setReply("");
+        } catch (error) {
+            showToast("Error", error.message, "error");
+        } finally {
+            setIsReplying(false);
+        }
+    };
+
     const handleLikeAndUnlike = async () => {
         if (!user) return showToast("Error", "Please login to like the post", "error");
         if (!post || !post._id) return;
-        if (isLiking) return; // Prevent multiple clicks while processing
+        if (isLiking) return;
 
-        // Set loading state
         setIsLiking(true);
 
-        // Optimistic UI update
         const wasLiked = liked;
         setLiked(!wasLiked);
         setLikesCount(prevCount => wasLiked ? prevCount - 1 : prevCount + 1);
@@ -42,19 +86,17 @@ const Actions = ({ post }) => {
             const data = await res.json();
 
             if (data.error && data.error !== "post liked successfully" && data.error !== "post unliked successfully") {
-                // Revert changes if API call failed
                 showToast("Error", data.error, "error");
                 setLiked(wasLiked);
                 setLikesCount(prevCount => wasLiked ? prevCount + 1 : prevCount - 1);
             }
 
         } catch (error) {
-            // Revert changes on error
             showToast("Error", error.message, "error");
             setLiked(wasLiked);
             setLikesCount(prevCount => wasLiked ? prevCount + 1 : prevCount - 1);
         } finally {
-            setIsLiking(false); // Reset loading state
+            setIsLiking(false);
         }
     };
 
@@ -62,7 +104,6 @@ const Actions = ({ post }) => {
         <>
             <Flex flexDirection={"column"}>
                 <Flex gap={3} my={2} onClick={(e) => e.preventDefault()}>
-                    {/* Like Icon */}
                     <svg
                         aria-label='Like'
                         color={liked ? "rgb(237, 73, 86)" : ""}
@@ -84,7 +125,6 @@ const Actions = ({ post }) => {
                         ></path>
                     </svg>
 
-                    {/* Comment Icon */}
                     <svg
                         aria-label="Comment"
                         color=""
@@ -94,6 +134,14 @@ const Actions = ({ post }) => {
                         viewBox="0 0 24 24"
                         width="20"
                         style={{ cursor: 'pointer' }}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            if (!user) {
+                                showToast("Error", "Please login to comment", "error");
+                                return;
+                            }
+                            onOpen();
+                        }}
                     >
                         <title>Comment</title>
                         <path
@@ -106,12 +154,8 @@ const Actions = ({ post }) => {
                     </svg>
                     <RepostSVG/>
                     <ShareSVG />
-
-                    {/* Share Icon */}
-
                 </Flex>
 
-                {/* Only render this part if post exists */}
                 {post && (
                     <Flex gap={2} alignItems="center">
                         <Text color="gray.light" fontSize="sm">
@@ -124,6 +168,99 @@ const Actions = ({ post }) => {
                     </Flex>
                 )}
             </Flex>
+
+            <Modal isOpen={isOpen} onClose={onClose} size="md">
+                <ModalOverlay 
+                    bg="blackAlpha.600"
+                    backdropFilter="blur(5px)"
+                />
+                <ModalContent 
+                    bg={useColorModeValue("white", "#1E1E1E")} 
+                    borderRadius="20px"
+                    width="600px"
+                    maxWidth="90%"
+                    mx="auto"
+                    my="auto"
+                >
+                    <ModalHeader display="flex" justifyContent="space-between" alignItems="center" position="relative">
+                        <Button 
+                            variant="ghost" 
+                            onClick={onClose} 
+                            fontSize="sm"
+                            position="absolute"
+                            left="0"
+                            _hover={{}} 
+                        >
+                            Hủy
+                        </Button>
+                        <Text fontSize="lg" fontWeight="bold" textAlign="center" flex="1">
+                            Trả lời bài viết
+                        </Text>
+                    </ModalHeader>
+                    
+                    <ModalBody pb={6} borderTop="1px solid" borderColor={useColorModeValue("gray.300", "gray.light")}>
+                        <Flex alignItems="center" gap={3} mb={4}>
+                            <Image
+                                src={user?.profilePic || "https://bit.ly/broken-link"}
+                                alt={user?.name || "User"}
+                                borderRadius="full"
+                                boxSize="40px"
+                            />
+                            <Text fontSize="md" fontWeight="bold">
+                                {user?.name || "Người dùng"}
+                            </Text>
+                        </Flex>
+                        
+                        <Box 
+                            p={1} 
+                            borderRadius="md" 
+                            bg={useColorModeValue("rgba(211, 211, 211, 0.3)", "rgba(180, 180, 180, 0.3)")} 
+                            mb={4}
+                        >
+                            <Text fontSize="sm" color={useColorModeValue("dark", "white")}>
+                                Trả lời cho bài viết: {post.Text?.substring(0, 50)}{post.Text?.length > 50 ? "..." : ""}
+                            </Text>
+                        </Box>
+                        
+                        <FormControl>
+                            <Textarea
+                                placeholder="Nhập bình luận của bạn..."
+                                value={reply}
+                                onChange={(e) => setReply(e.target.value)}
+                                size="md"
+                                resize="vertical"
+                                minHeight="120px"
+                                border="none"
+                                _focus={{ border: "none", boxShadow: "none" }}
+                                fontSize="lg"
+                            />
+                        </FormControl>
+                    </ModalBody>
+
+                    <ModalFooter borderTop="1px solid" borderColor={useColorModeValue("gray.300", "gray.light")}>
+                        <Flex width="100%" justifyContent="flex-end">
+                            <Button 
+                                colorScheme="blue" 
+                                px={6}
+                                borderRadius="full"
+                                onClick={handleReply}
+                                isLoading={isReplying}
+                                // isDisabled={!reply.trim()}
+                                // opacity={!reply.trim() ? 0.5 : 1}
+                                bg="white"
+                                color="black"
+                                border="1px solid"
+                                borderColor="gray.300"
+                                _hover={{
+                                    bg: "gray.100",
+                                }}
+                            >
+                                Gửi
+                            </Button>
+                        </Flex>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
         </>
     );
 };
@@ -133,7 +270,6 @@ export default Actions;
 const RepostSVG = () => {
     return (
         <>
-            {/* Repost Icon */}
             <svg
                 aria-label="Repost"
                 color="currentColor"
@@ -188,5 +324,4 @@ const ShareSVG = () => {
             </svg>
         </>
     )
-
 }
