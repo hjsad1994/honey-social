@@ -25,7 +25,7 @@ const Actions = ({ post }) => {
 
         // Set loading state
         setIsLiking(true);
-        
+
         // Optimistic UI update
         const wasLiked = liked;
         setLiked(!wasLiked);
@@ -38,16 +38,16 @@ const Actions = ({ post }) => {
                     "Content-Type": "application/json",
                 },
             });
-            
+
             const data = await res.json();
-            
+
             if (data.error && data.error !== "post liked successfully" && data.error !== "post unliked successfully") {
                 // Revert changes if API call failed
                 showToast("Error", data.error, "error");
                 setLiked(wasLiked);
                 setLikesCount(prevCount => wasLiked ? prevCount + 1 : prevCount - 1);
             }
-            
+
         } catch (error) {
             // Revert changes on error
             showToast("Error", error.message, "error");
@@ -72,7 +72,7 @@ const Actions = ({ post }) => {
                         viewBox='0 0 24 22'
                         width='20'
                         onClick={handleLikeAndUnlike}
-                        style={{ 
+                        style={{
                             cursor: isLiking ? 'wait' : 'pointer',
                             opacity: isLiking ? 0.7 : 1
                         }}
@@ -104,55 +104,11 @@ const Actions = ({ post }) => {
                             strokeWidth="2"
                         />
                     </svg>
-
-                    {/* Repost Icon */}
-                    <svg
-                        aria-label="Repost"
-                        color="currentColor"
-                        fill="currentColor"
-                        height="20"
-                        role="img"
-                        viewBox="0 0 24 24"
-                        width="20"
-                        style={{ cursor: 'pointer' }}
-                    >
-                        <title>Repost</title>
-                        <path
-                            fill=""
-                            d="M19.998 9.497a1 1 0 0 0-1 1v4.228a3.274 3.274 0 0 1-3.27 3.27h-5.313l1.791-1.787a1 1 0 0 0-1.412-1.416L7.29 18.287a1.004 1.004 0 0 0-.294.707v.001c0 .023.012.042.013.065a.923.923 0 0 0 .281.643l3.502 3.504a1 1 0 0 0 1.414-1.414l-1.797-1.798h5.318a5.276 5.276 0 0 0 5.27-5.27v-4.228a1 1 0 0 0-1-1Zm-6.41-3.496-1.795 1.795a1 1 0 1 0 1.414 1.414l3.5-3.5a1.003 1.003 0 0 0 0-1.417l-3.5-3.5a1 1 0 0 0-1.414 1.414l1.794 1.794H8.27A5.277 5.277 0 0 0 3 9.271V13.5a1 1 0 0 0 2 0V9.271a3.275 3.275 0 0 1 3.271-3.27Z"
-                        />
-                    </svg>
+                    <RepostSVG/>
+                    <ShareSVG />
 
                     {/* Share Icon */}
-                    <svg
-                        aria-label="Share"
-                        color=""
-                        fill="rgb(243, 245, 247)"
-                        height="20"
-                        role="img"
-                        viewBox="0 0 24 24"
-                        width="20"
-                        style={{ cursor: 'pointer' }}
-                    >
-                        <title>Share</title>
-                        <line
-                            fill="none"
-                            stroke="currentColor"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            x1="22"
-                            y1="3"
-                            x2="9.218"
-                            y2="10.083"
-                        />
-                        <polygon
-                            fill="none"
-                            points="11.698 20.334 22 3.001 2 3.001 9.218 10.084 11.698 20.334"
-                            stroke="currentColor"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                        />
-                    </svg>
+
                 </Flex>
 
                 {/* Only render this part if post exists */}
@@ -173,3 +129,64 @@ const Actions = ({ post }) => {
 };
 
 export default Actions;
+
+const RepostSVG = () => {
+    return (
+        <>
+            {/* Repost Icon */}
+            <svg
+                aria-label="Repost"
+                color="currentColor"
+                fill="currentColor"
+                height="20"
+                role="img"
+                viewBox="0 0 24 24"
+                width="20"
+                style={{ cursor: 'pointer' }}
+            >
+                <title>Repost</title>
+                <path
+                    fill=""
+                    d="M19.998 9.497a1 1 0 0 0-1 1v4.228a3.274 3.274 0 0 1-3.27 3.27h-5.313l1.791-1.787a1 1 0 0 0-1.412-1.416L7.29 18.287a1.004 1.004 0 0 0-.294.707v.001c0 .023.012.042.013.065a.923.923 0 0 0 .281.643l3.502 3.504a1 1 0 0 0 1.414-1.414l-1.797-1.798h5.318a5.276 5.276 0 0 0 5.27-5.27v-4.228a1 1 0 0 0-1-1Zm-6.41-3.496-1.795 1.795a1 1 0 1 0 1.414 1.414l3.5-3.5a1.003 1.003 0 0 0 0-1.417l-3.5-3.5a1 1 0 0 0-1.414 1.414l1.794 1.794H8.27A5.277 5.277 0 0 0 3 9.271V13.5a1 1 0 0 0 2 0V9.271a3.275 3.275 0 0 1 3.271-3.27Z"
+                />
+            </svg>
+        </>
+    )
+}
+
+const ShareSVG = () => {
+    return (
+        <>
+            <svg
+                aria-label="Share"
+                color=""
+                fill="rgb(243, 245, 247)"
+                height="20"
+                role="img"
+                viewBox="0 0 24 24"
+                width="20"
+                style={{ cursor: 'pointer' }}
+            >
+                <title>Share</title>
+                <line
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    x1="22"
+                    y1="3"
+                    x2="9.218"
+                    y2="10.083"
+                />
+                <polygon
+                    fill="none"
+                    points="11.698 20.334 22 3.001 2 3.001 9.218 10.084 11.698 20.334"
+                    stroke="currentColor"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                />
+            </svg>
+        </>
+    )
+
+}
