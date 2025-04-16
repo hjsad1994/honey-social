@@ -321,12 +321,16 @@ const UserPage = () => {
   const isOwnProfile = currentUser && user._id === currentUser._id;
 
   return (
-    <Box p={6} borderRadius="xl" bg={cardBg} boxShadow={shadowColor} transition="all 0.3s ease">
-      <UserHeader 
-        user={user} 
-        onFollowUpdate={handleFollowUpdate}
-        refreshUserData={fetchUserData} 
-      />
+      <Box
+        p={6}
+        borderRadius="30px"
+        borderWidth="0.5px" 
+        borderStyle="solid"
+        borderColor={useColorModeValue("blackAlpha.300", "whiteAlpha.200")}
+        bg={cardBg}
+        boxShadow={shadowColor}
+        transition="all 0.3s ease"
+      >
       
       {fetchingPosts ? (
         <Flex justifyContent="center" py={10}>

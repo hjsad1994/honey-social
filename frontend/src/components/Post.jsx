@@ -153,16 +153,15 @@ const Post = ({ post, postedBy }) => {
                     </Flex>
                     <Flex flex={1} flexDirection="column" gap={2}>
                         <Flex justifyContent="space-between" w="full">
-                            <Flex w="full" alignItems="center">
+                            <Flex w="full" gap={2} alignItems="center">
                                 <Text fontSize="sm" fontWeight="bold">
                                     {postUser.username}
                                 </Text>
-                                <Image src="/verified.png" w={4} h={4} ml={1} />
+                                <Image src="/verified.png" w={4} h={4} ml={-1} />
+                                <Text fontSize="sm" color="gray.light">{formatTimeCompact(new Date(post.createdAt))}</Text>
+                                
                             </Flex>
                             <Flex gap={4} alignContent="center">
-                                <Text fontSize="xs" width={20} mt={1} textAlign={'right'} color="gray.light">
-                                    {formatTimeCompact(new Date(post.createdAt))}
-                                </Text>
                                 <Box onClick={(e) => e.preventDefault()} ml={2}>
                                     <Menu>
                                         <MenuButton>
