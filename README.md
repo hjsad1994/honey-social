@@ -40,5 +40,5 @@ Honey là một nền tảng mạng xã hội hiện đại, cho phép người 
 ### Thiết Lập
 1. **Clone Repository:**
    ```bash
-   git clone https://github.com/username/honey-social-media.git
-   cd honey-social-media
+   git clone https://github.com/username/honey-social.git
+   cd honey-social
