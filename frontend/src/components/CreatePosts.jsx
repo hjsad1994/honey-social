@@ -28,8 +28,14 @@ import useImageUpload from '../hooks/useImageUpload';
 import useShowToast from '../hooks/useShowToast';
 import { addPost } from '../reducers/postReducer';
 
-const CreatePosts = () => {
-    const { isOpen, onOpen, onClose } = useDisclosure();
+const CreatePosts = ({ isOpen: externalIsOpen, onClose: externalOnClose }) => {
+    // Sử dụng internal hooks chỉ khi không có external props
+    const { isOpen: internalIsOpen, onOpen: internalOnOpen, onClose: internalOnClose } = useDisclosure();
+    
+    // Sử dụng external props nếu được truyền vào
+    const finalIsOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
+    const finalOnClose = externalOnClose || handleCloseModal;
+
     const [postText, setPostText] = useState("");
     const imageInputRef = useRef(null);
     const MAX_CHARS = 500; // Giới hạn ký tự
@@ -149,7 +155,13 @@ const CreatePosts = () => {
         setPostText("");
         setRemainingChar(MAX_CHARS); // Reset giá trị remainingChar
         resetImage();
-        onClose();
+        
+        // Gọi callback onClose từ bên ngoài nếu có
+        if (externalOnClose) {
+            externalOnClose();
+        } else {
+            internalOnClose();
+        }
     };
 
     // Xác định màu sắc dựa trên remainingChar
@@ -161,31 +173,34 @@ const CreatePosts = () => {
 
     return (
         <>
-            <Button
-                position={"fixed"}
-                bottom={10}
-                right={10}
+            {/* Chỉ hiển thị button khi KHÔNG có external isOpen prop */}
+            {externalIsOpen === undefined && (
+                <Button
+                    position={"fixed"}
+                    bottom={10}
+                    right={10}
 
-                bg={useColorModeValue("gray.300", "gray.dark")}
-                size="lg"
-                width="80px"
-                height="70px"
-                borderRadius="15px"
-                boxShadow="lg"
-                transition="all 0.3s ease"
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-                onClick={onOpen}
-                _hover={{
-                    transform: "scale(1.12)",
-                    boxShadow: "xl"
-                }}
-            >
-                <AddIcon boxSize={7} />
-            </Button>
+                    bg={useColorModeValue("gray.300", "gray.dark")}
+                    size="lg"
+                    width="80px"
+                    height="70px"
+                    borderRadius="15px"
+                    boxShadow="lg"
+                    transition="all 0.3s ease"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    onClick={internalOnOpen}
+                    _hover={{
+                        transform: "scale(1.12)",
+                        boxShadow: "xl"
+                    }}
+                >
+                    <AddIcon boxSize={7} />
+                </Button>
+            )}
 
-            <Modal isOpen={isOpen} onClose={handleCloseModal} size="md">
+            <Modal isOpen={finalIsOpen} onClose={finalOnClose} size="md">
                 <ModalOverlay 
                     bg="blackAlpha.600"
                     backdropFilter="blur(5px)"
@@ -213,16 +228,6 @@ const CreatePosts = () => {
                         <Text fontSize="lg" fontWeight="bold" textAlign="center" flex="1">
                             Tạo bài viết mới
                         </Text>
-                        {/* <Button 
-                            variant="ghost" 
-                            fontSize="sm"
-                            position="absolute"
-                            right="0"
-                            _hover={{}}
-                            onClick={() => console.log("Xem thêm được nhấn!")}
-                        >
-                            Xem thêm
-                        </Button> */}
                     </ModalHeader>
                     
                     <ModalBody pb={6} borderTop="1px solid" borderColor={useColorModeValue("gray.300", "gray.light")}>
@@ -293,7 +298,6 @@ const CreatePosts = () => {
                     <ModalFooter borderTop="1px solid" borderColor={useColorModeValue("gray.300", "gray.light")}>
                         <Flex width="100%" justifyContent="space-between" alignItems="center">
                             <IconButton
-                                // bg={colorMode === "dark" ? "rgba(80, 80, 80, 0.3)" : "rgba(180, 180, 180, 0.3)"} // Màu nền thay đổi theo chế độ
                                 color={useColorModeValue("black", "white")} // Màu chữ thay đổi theo chế độ
                                 aria-label="Upload image"
                                 icon={<BsImage size="20px" />}
@@ -313,7 +317,9 @@ const CreatePosts = () => {
                                 px={6}
                                 borderRadius="full"
                                 onClick={HandleCreatePost}
-                                // opacity={!postText.trim() && !imagePreview ? 0.5 : 1} // Thêm hiệu ứng mờ
+                                isDisabled={!postText.trim() && !imagePreview} // Ẩn mờ nút nếu không có nội dung hoặc ảnh
+                                isLoading={loading}
+                                opacity={!postText.trim() && !imagePreview ? 0.5 : 1} // Thêm hiệu ứng mờ
                                 bg="white" // Màu nền trắng
                                 color="black" // Chữ màu đen
                                 border="1px solid" // Thêm viền

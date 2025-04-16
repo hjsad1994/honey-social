@@ -1,7 +1,10 @@
-import { Flex, useColorMode, Image, Box, Icon, Text } from '@chakra-ui/react';
+import { Flex, useColorMode, Image, Box, Icon, Text, useBreakpointValue } from '@chakra-ui/react';
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { Link, useLocation } from 'react-router-dom';
+import { AddIcon } from '@chakra-ui/icons'; // Thêm import AddIcon 
+import { useDisclosure } from '@chakra-ui/react'; // Thêm useDisclosure để mở modal 
+import CreatePosts from './CreatePosts'; // Thêm import
 
 const Header = () => {
     const { colorMode, toggleColorMode } = useColorMode();
@@ -9,6 +12,7 @@ const Header = () => {
     const location = useLocation();
     const [activeIcon, setActiveIcon] = useState("home");
     const user = useSelector((state) => state.user.user);
+    const { isOpen, onOpen, onClose } = useDisclosure(); // Để mở modal CreatePost
     
     useEffect(() => {
         if (location.pathname === "/") {
@@ -59,7 +63,6 @@ const Header = () => {
                         color={colorMode === "dark" ? "white" : "black"}
                         transition="all 0.3s ease"
                         _hover={textHoverStyles}
-
                         px={3}
                         py={1}
                         borderRadius="md"
@@ -69,30 +72,41 @@ const Header = () => {
                 </Flex>
             )}
 
-            {/* Fixed side navigation panel */}
+            {/* Responsive Navigation Bar */}
             <Box 
                 position="fixed"
-                left="0"
-                top="50%"
-                transform="translateY(-50%)" 
-                width="80px"
+                left={{ base: 0, md: 0 }}
+                bottom={{ base: 0, md: "auto" }}
+                top={{ base: "auto", md: "50%" }}
+                transform={{ base: "translateY(0)", md: "translateY(-50%)" }}
+                width={{ base: "100%", md: "80px" }}
+                height={{ base: "60px", md: "auto" }} 
                 display="flex"
-                flexDirection="column"
+                flexDirection={{ base: "row", md: "column" }}
                 alignItems="center"
-                gap={6}
+                justifyContent="space-evenly"
+                gap={{ base: 0, md: 6 }}
                 zIndex={100}
+                bg={{ base: colorMode === "dark" ? "#101010" : "whiteAlpha.300", md: "transparent" }}
+                borderTop={{ base: "1px solid", md: "none" }}
+                borderColor={{ base: colorMode === "dark" ? "whiteAlpha.300" : "#101010", md: "transparent" }}
+                boxShadow={{ base: "0 -2px 10px rgba(0,0,0,0.05)", md: "none" }}
+                px={{ base: 4, md: 0 }}
             >
                 {/* Logo */}
                 <Box
                     sx={containerStyle}
                     _hover={hoverStyles}
-                    boxSize={55}
-                    mx="auto"
+                    boxSize={{ base: 45, md: 55 }}
+                    mx={{ base: 0, md: "auto" }}
+                    display="flex" 
+                    alignItems="center"
+                    justifyContent="center"
                 >
                     <Image
                         cursor={'pointer'}
                         alt='logo'
-                        w={10}
+                        w={{ base: 9, md: 10 }}
                         src={colorMode === "dark" ? "/light-logo.svg" : "/dark-logo.svg"}
                         onClick={toggleColorMode}
                         position="relative"
@@ -108,17 +122,20 @@ const Header = () => {
                         <Box
                             {...(activeIcon === "home" ? activeIconStyles : {})}
                             sx={containerStyle}
-                            boxSize={50}
+                            boxSize={{ base: 45, md: 50 }}
                             _hover={activeIcon !== "home" ? hoverStyles : {}}
-                            mx="auto"
+                            mx={{ base: 0, md: "auto" }}
+                            display="flex"
+                            alignItems="center" 
+                            justifyContent="center"
                         >
                             <Icon
                                 viewBox="1 1 24 24"
-                                boxSize={6}
+                                boxSize={{ base: 6, md: 6 }}
                                 cursor="pointer"
                                 fill={activeIcon === "home" ? "currentColor" : "none"}
                                 stroke={"currentColor"}
-                                strokeWidth={2.5}
+                                strokeWidth={2}
                                 strokeLinecap="round"
                                 position="relative"
                                 zIndex={2}
@@ -131,6 +148,35 @@ const Header = () => {
                     </Link>
                 )}
 
+                {/* Add Post Icon */}
+                {user && (
+                    <Box
+                        sx={containerStyle}
+                        bg={colorMode === "dark" ? "whiteAlpha.200" : "rgba(0, 0, 0, 0.06)"}
+                        boxSize={{ base: 45, md: 50 }}
+                        mx={{ base: 0, md: "auto" }}
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="center"
+                        cursor="pointer"
+                        onClick={onOpen} // Mở CreatePost modal
+                        _hover={{
+                            bg: colorMode === "dark" ? "whiteAlpha.300" : "rgba(0, 0, 0, 0.1)",
+                            transform: "scale(1.05)",
+                            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                        }}
+                        position="relative"
+                        transition="all 0.3s ease"
+                    >
+                        <AddIcon 
+                            boxSize={{ base: 4, md: 5 }}
+                            color={colorMode === "dark" ? "white" : "black"}
+                            position="relative"
+                            zIndex={2}
+                        />
+                    </Box>
+                )}
+
                 {/* Profile Icon */}
                 {user && (
                     <Link
@@ -140,17 +186,20 @@ const Header = () => {
                         <Box
                             {...(activeIcon === "profile" ? activeIconStyles : {})}
                             sx={containerStyle}
-                            boxSize={50}
+                            boxSize={{ base: 45, md: 50 }}
                             _hover={activeIcon !== "profile" ? hoverStyles : {}}
-                            mx="auto"
+                            mx={{ base: 0, md: "auto" }}
+                            display="flex"
+                            alignItems="center"
+                            justifyContent="center"
                         >
                             <Icon
                                 viewBox="1 1 24 24"
-                                boxSize={6}
+                                boxSize={{ base: 6, md: 6 }}
                                 cursor="pointer"
                                 fill={activeIcon === "profile" ? "currentColor" : "transparent"}
                                 stroke={"currentColor"}
-                                strokeWidth={2.5}
+                                strokeWidth={2}
                                 strokeLinecap="round"
                                 position="relative"
                                 zIndex={2}
@@ -164,6 +213,9 @@ const Header = () => {
                     </Link>
                 )}
             </Box>
+
+            {/* Modal CreatePost */}
+            {isOpen && <CreatePosts isOpen={isOpen} onClose={onClose} />}
         </>
     );
 };
