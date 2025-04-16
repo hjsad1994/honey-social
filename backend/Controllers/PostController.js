@@ -205,6 +205,51 @@ const replyToPost = async (req, res) => {
         console.log("error in replyToPost controller", err.message)
     }
 }
+const likeUnlikeReply = async (req, res) => {
+    try {
+        const replyId = req.params.id;
+        const userId = req.user._id;
+        
+        // Find the post containing this reply
+        const post = await Post.findOne({ "replies._id": replyId });
+        
+        if (!post) {
+            return res.status(404).json({ error: "Reply not found" });
+        }
+        
+        // Find the specific reply
+        const replyIndex = post.replies.findIndex(reply => reply._id.toString() === replyId);
+        
+        if (replyIndex === -1) {
+            return res.status(404).json({ error: "Reply not found" });
+        }
+        
+        const reply = post.replies[replyIndex];
+        
+        // Initialize likes array if it doesn't exist
+        if (!reply.likes) {
+            reply.likes = [];
+        }
+        
+        // Check if user has already liked this reply
+        const userLikedReply = reply.likes.includes(userId);
+        
+        if (userLikedReply) {
+            // Unlike the reply
+            reply.likes = reply.likes.filter(id => id.toString() !== userId.toString());
+            await post.save();
+            res.status(200).json({ error: "reply unliked successfully" });
+        } else {
+            // Like the reply
+            reply.likes.push(userId);
+            await post.save();
+            res.status(200).json({ error: "reply liked successfully" });
+        }
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+        console.log("error in likeUnlikeReply controller", err.message);
+    }
+};
 const getFeedPosts = async (req, res) => {
     try {
         const userId = req.user._id
@@ -240,4 +285,4 @@ const getUserPosts = async (req, res) => {
         res.status(500).json({ error: error.message })
     } 
 }
-export { createPost, getPost, deletePost, likeUnlikePost, replyToPost, getFeedPosts, getUserPosts }
+export { createPost, getPost, deletePost, likeUnlikePost, replyToPost, likeUnlikeReply, getFeedPosts, getUserPosts }
