@@ -47,8 +47,24 @@ const postSlice = createSlice({
         }
       });
     },
+    // Add this new reducer for post update
+    updatePost: (state, action) => {
+      // Update in posts array
+      const postIndex = state.posts.findIndex(post => post._id === action.payload._id);
+      if (postIndex !== -1) {
+        state.posts[postIndex] = action.payload;
+      }
+      
+      // Update in userPosts map
+      for (const userId in state.userPosts) {
+        const userPostIndex = state.userPosts[userId].findIndex(post => post._id === action.payload._id);
+        if (userPostIndex !== -1) {
+          state.userPosts[userId][userPostIndex] = action.payload;
+        }
+      }
+    },
   },
 });
 
-export const { setPosts, addPost, setUserPosts, deletePost } = postSlice.actions;
+export const { setPosts, addPost, setUserPosts, deletePost, updatePost } = postSlice.actions;
 export default postSlice.reducer;
