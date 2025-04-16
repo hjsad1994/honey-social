@@ -34,11 +34,19 @@ const PostPage = () => {
   const deleteHoverBg = useColorModeValue("red.50", "gray.600");
   const copyLinkText = useColorModeValue("black", "white");
   const copyLinkHoverBg = useColorModeValue("gray.100", "gray.600");
-  const modalContentBg = useColorModeValue("white", "gray.800");
+  const modalContentBg = useColorModeValue("white", "#101010");
+  const modalHeaderColor = useColorModeValue("black", "white");
+  const modalBodyColor = useColorModeValue("gray.600", "gray.300");
   const cancelBtnBg = useColorModeValue("gray.100", "gray.700");
+  const cancelBtnColor = useColorModeValue("black", "white");
   const cancelBtnHoverBg = useColorModeValue("gray.200", "gray.600");
+  const deleteBtnBg = useColorModeValue("black", "white");
+  const deleteBtnColor = useColorModeValue("white", "black");
+  const deleteBtnHoverBg = useColorModeValue("gray.800", "gray.200");
   const cardBg = useColorModeValue("white", "#161617");
   const shadowColor = useColorModeValue("lg", "dark-lg");
+  const borderColor = useColorModeValue("blackAlpha.300", "whiteAlpha.200");
+
   // Fetch post data when component mounts
   useEffect(() => {
     const fetchPost = async () => {
@@ -221,7 +229,7 @@ const PostPage = () => {
         borderRadius="30px"
         borderWidth="0.5px" 
         borderStyle="solid"
-        borderColor={useColorModeValue("blackAlpha.300", "whiteAlpha.200")}
+        borderColor={borderColor}
         bg={cardBg}
         boxShadow={shadowColor}
         transition="all 0.3s ease"
@@ -347,7 +355,7 @@ const PostPage = () => {
       <Modal isOpen={isOpen} onClose={onClose} isCentered>
         <ModalOverlay bg="blackAlpha.600" backdropFilter="blur(5px)" />
         <ModalContent
-            bg={useColorModeValue("white", "black")}
+            bg={modalContentBg}
             borderRadius="15px"
             mx={4}
             py={6}
@@ -359,14 +367,14 @@ const PostPage = () => {
                 fontWeight="bold"
                 p={0}
                 mb={4}
-                color={useColorModeValue("black", "white")}
+                color={modalHeaderColor}
                 textAlign="center"
             >
                 Xóa bài viết?
             </ModalHeader>
             <ModalBody
                 fontSize="sm"
-                color={useColorModeValue("gray.600", "gray.300")}
+                color={modalBodyColor}
                 p={0}
                 mb={6}
             >
@@ -380,19 +388,19 @@ const PostPage = () => {
             >
                 <Button
                     onClick={onClose}
-                    bg={useColorModeValue("gray.100", "gray.700")}
-                    color={useColorModeValue("black", "white")}
-                    _hover={{ bg: useColorModeValue("gray.200", "gray.600") }}
+                    // bg={cancelBtnBg}
+                    color={cancelBtnColor}
+                    // _hover={{ bg: cancelBtnHoverBg }}
                     w="48%"
                     borderRadius="md"
                 >
                     Huỷ
                 </Button>
                 <Button
-                    bg={useColorModeValue("black", "white")}
-                    color={useColorModeValue("white", "black")}
+                    bg={deleteBtnBg}
+                    color={deleteBtnColor}
                     _hover={{
-                        bg: useColorModeValue("gray.800", "gray.200"),
+                        bg: deleteBtnHoverBg
                     }}
                     onClick={handleDeletePost}
                     isLoading={isDeleting}

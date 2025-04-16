@@ -59,7 +59,7 @@ const Post = ({ post, postedBy }) => {
     const deleteHoverBg = useColorModeValue("red.50", "gray.600");
     const copyLinkText = useColorModeValue("black", "white");
     const copyLinkHoverBg = useColorModeValue("gray.100", "gray.600");
-    const modalContentBg = useColorModeValue("white", "black");
+    const modalContentBg = useColorModeValue("white", "#101010");
     const modalHeaderColor = useColorModeValue("black", "white");
     const modalBodyColor = useColorModeValue("gray.600", "gray.300");
     const cancelBtnBg = useColorModeValue("gray.100", "gray.700");
@@ -286,9 +286,8 @@ const Post = ({ post, postedBy }) => {
                     >
                         <Button
                             onClick={onClose}
-                            bg={cancelBtnBg}
+                            // bg={cancelBtnBg}
                             color={cancelBtnColor}
-                            _hover={{ bg: cancelBtnHoverBg }}
                             w="48%"
                             borderRadius="md"
                         >

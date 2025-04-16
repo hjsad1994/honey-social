@@ -7,8 +7,13 @@ const HomePage = () => {
     const showToast = useShowToast();
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
+    
+    // Di chuyển TẤT CẢ useColorModeValue lên đầu component
     const cardBg = useColorModeValue("white", "#161617");
     const shadowColor = useColorModeValue("lg", "dark-lg");
+    const borderColor = useColorModeValue("blackAlpha.300", "whiteAlpha.200");
+    const noPostsTextColor = useColorModeValue("gray.600", "gray.400");
+
     useEffect(() => {
         const getFeedPosts = async () => {
             try {
@@ -44,7 +49,7 @@ const HomePage = () => {
         return (
             <Flex justifyContent="center" alignItems="center" height="100vh" flexDirection="column" gap={4}>
                 <Text fontSize="lg" fontWeight="bold">No posts found</Text>
-                <Text color="gray.500">Follow some users to see their posts</Text>
+                <Text color={noPostsTextColor}>Follow some users to see their posts</Text>
             </Flex>
         );
     }
@@ -52,24 +57,23 @@ const HomePage = () => {
     // Render posts when available
     return (
         <>
-      <Box
-        p={6}
-        borderRadius="30px"
-        borderWidth="0.5px" 
-        borderStyle="solid"
-        borderColor={useColorModeValue("blackAlpha.300", "whiteAlpha.200")}
-        bg={cardBg}
-        boxShadow={shadowColor}
-        transition="all 0.3s ease"
-      >
-
+            <Box
+                p={6}
+                borderRadius="30px"
+                borderWidth="0.5px" 
+                borderStyle="solid"
+                borderColor={borderColor} // Sử dụng biến đã được tính toán
+                bg={cardBg}
+                boxShadow={shadowColor}
+                transition="all 0.3s ease"
+            >
                 {posts.map((post) => (
                     <Post
                         key={post._id}
                         post={{
                             _id: post._id,
-                            text: post.text,     // KEEP LOWERCASE to match Post component
-                            img: post.img,       // KEEP LOWERCASE to match Post component
+                            text: post.text,
+                            img: post.img,
                             likes: post.likes || [],
                             replies: post.replies || [],
                             createdAt: post.createdAt
