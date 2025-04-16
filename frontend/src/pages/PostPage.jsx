@@ -20,6 +20,7 @@ const PostPage = () => {
   const [loading, setLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [localReplies, setLocalReplies] = useState([]);
 
   const showToast = useShowToast();
   const navigate = useNavigate();
@@ -72,7 +73,32 @@ const PostPage = () => {
     fetchPost();
   }, [pid, showToast, navigate]);
 
-  // Add this function to refresh post data
+  // Update localReplies when post changes
+  useEffect(() => {
+    if (post?.replies) {
+      setLocalReplies(post.replies);
+    }
+  }, [post?._id]); // Only update when post ID changes
+
+  // Callback to remove comment from UI
+  const handleDeleteComment = (commentId) => {
+    console.log(`Xóa comment ${commentId} khỏi UI trong PostPage`);
+    
+    // Cập nhật localReplies để xóa comment khỏi UI
+    setLocalReplies(prev => prev.filter(reply => reply._id !== commentId));
+    
+    // QUAN TRỌNG: Cũng cập nhật đối tượng post để đảm bảo số replies hiển thị đúng
+    setPost(prevPost => {
+      if (!prevPost || !prevPost.replies) return prevPost;
+      
+      return {
+        ...prevPost,
+        replies: prevPost.replies.filter(reply => reply._id !== commentId)
+      };
+    });
+  };
+
+  // Cải thiện hàm refreshPostData để cập nhật cả post và localReplies
   const refreshPostData = async () => {
     try {
       const res = await fetch(`/api/posts/${pid}`);
@@ -83,7 +109,14 @@ const PostPage = () => {
         return;
       }
 
+      // Cập nhật state post
       setPost(data);
+      
+      // QUAN TRỌNG: Cập nhật localReplies để hiển thị bình luận mới
+      if (data.replies) {
+        setLocalReplies(data.replies);
+        console.log("Đã cập nhật localReplies:", data.replies.length, "bình luận");
+      }
     } catch (error) {
       showToast("Error", error.message, "error");
     }
@@ -284,12 +317,13 @@ const PostPage = () => {
 
       <Divider my={4} />
 
-      {post.replies && post.replies.length > 0 ? (
-        post.replies.map((reply, index) => (
+      {localReplies && localReplies.length > 0 ? (
+        localReplies.map((reply) => (
           <Comment
-            key={reply._id || index}
+            key={`${reply._id}-${localReplies.length}`}
             reply={reply}
             postId={post._id}
+            onDeleteReply={handleDeleteComment}
           />
         ))
       ) : (

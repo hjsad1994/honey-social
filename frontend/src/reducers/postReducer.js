@@ -5,6 +5,7 @@ const postSlice = createSlice({
   initialState: {
     posts: [],
     userPosts: {},
+    currentPost: null,
   },
   reducers: {
     setPosts: (state, action) => {
@@ -12,18 +13,12 @@ const postSlice = createSlice({
     },
     addPost: (state, action) => {
       const newPost = action.payload;
-      
-      // Add to feed posts - always at the beginning for immediate visibility
       state.posts = [newPost, ...state.posts];
-      
-      // Add to user posts if the user exists
       const userId = newPost.postedBy;
       if (userId) {
-        // Create the user's posts array if it doesn't exist
         if (!state.userPosts[userId]) {
           state.userPosts[userId] = [];
         }
-        // Add the post to the beginning of the user's posts
         state.userPosts[userId] = [newPost, ...state.userPosts[userId]];
       }
     },
@@ -31,14 +26,9 @@ const postSlice = createSlice({
       const { userId, posts } = action.payload;
       state.userPosts[userId] = posts;
     },
-    // Add this new reducer for post deletion
     deletePost: (state, action) => {
       const postIdToDelete = action.payload;
-      
-      // Remove from global posts array
       state.posts = state.posts.filter(post => post._id !== postIdToDelete);
-      
-      // Remove from userPosts for all users
       Object.keys(state.userPosts).forEach(userId => {
         if (state.userPosts[userId]) {
           state.userPosts[userId] = state.userPosts[userId].filter(
@@ -47,24 +37,78 @@ const postSlice = createSlice({
         }
       });
     },
-    // Add this new reducer for post update
     updatePost: (state, action) => {
-      // Update in posts array
-      const postIndex = state.posts.findIndex(post => post._id === action.payload._id);
-      if (postIndex !== -1) {
-        state.posts[postIndex] = action.payload;
-      }
-      
-      // Update in userPosts map
+      state.posts = state.posts.map(post =>
+        post._id === action.payload._id ? action.payload : post
+      );
+      state.currentPost = state.currentPost?._id === action.payload._id ?
+        action.payload : state.currentPost;
       for (const userId in state.userPosts) {
-        const userPostIndex = state.userPosts[userId].findIndex(post => post._id === action.payload._id);
+        const userPostIndex = state.userPosts[userId].findIndex(
+          post => post._id === action.payload._id
+        );
         if (userPostIndex !== -1) {
           state.userPosts[userId][userPostIndex] = action.payload;
         }
       }
     },
+    removeReply: (state, action) => {
+      const { postId, replyId } = action.payload;
+      console.log("removeReply được kích hoạt trong reducer:", postId, replyId);
+      
+      try {
+          // Tạo một mảng posts mới hoàn toàn
+          const updatedPosts = state.posts.map(post => {
+              if (post._id === postId) {
+                  console.log("Tìm thấy post cần cập nhật:", post._id);
+                  console.log("Số replies trước khi xóa:", post.replies?.length || 0);
+                  
+                  // Luôn trả về object mới để đảm bảo reference thay đổi
+                  return {
+                      ...post,
+                      replies: post.replies 
+                          ? [...post.replies.filter(reply => reply._id !== replyId)]
+                          : []
+                  };
+              }
+              return post;
+          });
+          
+          // Thay thế toàn bộ state.posts
+          state.posts = [...updatedPosts];
+          
+          // Cũng cập nhật currentPost nếu có
+          if (state.currentPost && state.currentPost._id === postId) {
+              state.currentPost = {
+                  ...state.currentPost,
+                  replies: state.currentPost.replies
+                      ? [...state.currentPost.replies.filter(reply => reply._id !== replyId)]
+                      : []
+              };
+          }
+          
+          // Cập nhật userPosts với references mới
+          Object.keys(state.userPosts).forEach(userId => {
+              state.userPosts[userId] = state.userPosts[userId].map(post => {
+                  if (post._id === postId) {
+                      return {
+                          ...post,
+                          replies: post.replies
+                              ? [...post.replies.filter(reply => reply._id !== replyId)]
+                              : []
+                      };
+                  }
+                  return post;
+              });
+          });
+          
+          console.log("Reducer đã cập nhật state");
+      } catch (error) {
+          console.error("Lỗi trong reducer removeReply:", error);
+      }
+    },
   },
 });
 
-export const { setPosts, addPost, setUserPosts, deletePost, updatePost } = postSlice.actions;
+export const { setPosts, addPost, setUserPosts, deletePost, updatePost, removeReply } = postSlice.actions;
 export default postSlice.reducer;
