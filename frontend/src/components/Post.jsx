@@ -242,7 +242,7 @@ const Post = ({ post, postedBy }) => {
             <ModalOverlay bg="blackAlpha.600" backdropFilter="blur(5px)" />
             <ModalContent
                 bg={useColorModeValue("white", "black")} // White in light mode, black in dark mode
-                borderRadius="lg"
+                borderRadius="15px"
                 mx={4}
                 py={6}
                 px={4}
