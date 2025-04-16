@@ -88,17 +88,31 @@ const UserHeader = ({ user, onFollowUpdate }) => {
         <Text>{user.bio}</Text>
 
         <Flex gap={2}>
-          <Box className="icon-container">
-            <BsInstagram size={24} cursor="pointer" />
-          </Box>
 
           <Menu>
-            <MenuButton className="icon-container">
+            <MenuButton 
+              className="icon-container"
+              p={2}
+              borderRadius="full"
+              transition="all 0.3s"
+              _hover={{
+                bg: useColorModeValue("rgba(180, 180, 180, 0.3)", "rgba(80, 80, 80, 0.3)")
+              }}
+            >
               <CgMoreO size={24} cursor="pointer" />
             </MenuButton>
             <Portal>
-              <MenuList bg={"gray.dark"}>
-                <MenuItem bg={"gray.dark"} onClick={copyURL}>
+              <MenuList 
+                bg={useColorModeValue("white", "gray.dark")} 
+                borderColor={useColorModeValue("gray.200", "gray.700")}
+                boxShadow="md"
+              >
+                <MenuItem 
+                  bg={useColorModeValue("white", "gray.dark")} 
+                  color={useColorModeValue("black", "white")}
+                  _hover={{ bg: useColorModeValue("gray.100", "gray.600") }}
+                  onClick={copyURL}
+                >
                   Copy Link
                 </MenuItem>
               </MenuList>

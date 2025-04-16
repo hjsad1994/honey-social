@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Flex, Avatar, Box, Text, Image, Spinner } from '@chakra-ui/react';
-import { BsThreeDots } from 'react-icons/bs';
 import Actions from './Actions';
 import useShowToast from '../hooks/useShowToast';
 
@@ -31,7 +30,6 @@ const formatTimeCompact = (date) => {
 };
 
 const Post = ({ post, postedBy }) => {
-    const [liked, setLiked] = useState(false);
     const [loading, setLoading] = useState(true);
     const [postUser, setPostUser] = useState(null); // Renamed from 'user' to 'postUser'
     const showToast = useShowToast();
@@ -44,7 +42,7 @@ const Post = ({ post, postedBy }) => {
                 
                 const res = await fetch("/api/users/profile/" + postedBy);
                 const data = await res.json();
-                console.log(data)
+                // console.log(data)
                 if (data.error) {
                     showToast("Error", data.error, "error");
                     return;
@@ -62,12 +60,6 @@ const Post = ({ post, postedBy }) => {
         fetchUser();
     }, [postedBy, showToast]);
 
-    // Check if user has liked the post
-    useEffect(() => {
-        if (post?.likes?.includes(postedBy)) {
-            setLiked(true);
-        }
-    }, [post, postedBy]);
 
     if (loading) {
         return (
@@ -150,18 +142,10 @@ const Post = ({ post, postedBy }) => {
                     )}
 
                     <Flex gap={3} my={1}>
-                        <Actions liked={liked} setLiked={setLiked} />
+                        <Actions post={post} />
                     </Flex>
 
-                    <Flex gap={2} alignItems="center">
-                        <Text color="gray.light" fontSize="sm">
-                            {post.replies?.length || 0} replies
-                        </Text>
-                        <Box w={0.5} h={0.5} borderRadius="full" bg="gray.light" />
-                        <Text color="gray.light" fontSize="sm">
-                            {post.likes?.length || 0} likes
-                        </Text>
-                    </Flex>
+
                 </Flex>
             </Flex>
         </Link>
