@@ -7,7 +7,7 @@ import {
 import { useSelector, useDispatch } from 'react-redux';
 import useShowToast from '../hooks/useShowToast';
 import useImageUpload from '../hooks/useImageUpload'; // Import hook useImageUpload
-import { BsImage } from 'react-icons/bs'; // Import icon cho nút upload ảnh
+import { BsImage } from 'react-icons/bs'; // Import icon cho nút upload ảnhh
 
 const Actions = ({ post }) => {
     const [liked, setLiked] = useState(false);
