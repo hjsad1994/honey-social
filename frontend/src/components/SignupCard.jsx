@@ -1,27 +1,25 @@
+'use client'
 
 import {
     Flex,
     Box,
     FormControl,
-    FormLabel,
     Input,
     InputGroup,
-    HStack,
     InputRightElement,
     Stack,
     Button,
     Heading,
     Text,
-    useColorModeValue,
     Link,
-    useToast,
+    useColorModeValue,
 } from '@chakra-ui/react'
-import { use, useState } from 'react'
+import { useState } from 'react'
 import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons'
 import { useDispatch } from 'react-redux'
 import { setAuthScreen } from '../reducers/authReducer'
-import useShowToast from './../hooks/useShowToast';
-import { setUser } from '../reducers/userReducer'; // Add this import
+import useShowToast from '../hooks/useShowToast'
+import { setUser } from '../reducers/userReducer'
 
 export default function SignupCard() {
     const [showPassword, setShowPassword] = useState(false)
@@ -32,109 +30,211 @@ export default function SignupCard() {
         email: "",
         password: "",
     })
+    const [loading, setLoading] = useState(false)
     const showToast = useShowToast()
+
     const handleSignup = async () => {
-        console.log(inputs)
+        setLoading(true)
         try {
-            // CRUD -> Create is POST , Read is GET, Update is PUT, Delete is DELETE
             const res = await fetch('/api/users/signup', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json', // set content type to JSON
+                    'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(inputs), // convert to JSON string
+                body: JSON.stringify(inputs),
             })
-            const data = await res.json(); // convert to JSON object
-            if(data.error) {
+            const data = await res.json()
+            if (data.error) {
                 showToast('Error', data.error, 'error')
                 return
-            }            
-            dispatch(setUser(data));
-            
+            }
+            dispatch(setUser(data))
         } catch (error) {
-            console.error(error);
-            alert('Có lỗi xảy ra: ' + error.message);
+            showToast('Error', error.toString(), 'error')
+        } finally {
+            setLoading(false)
         }
     }
 
+    // Define light and dark mode values using useColorModeValue
+    const bgColor = useColorModeValue("gray.100", "transparent")
+    const textColor = useColorModeValue("black", "white")
+    const inputBg = useColorModeValue("rgba(104, 101, 101, 0.3)", "rgba(71, 68, 68, 0.3)")
+    const inputBorder = useColorModeValue("gray.300", "white")
+    const placeholderColor = useColorModeValue("gray.700", "gray.400")
+    const buttonBg = useColorModeValue("black", "white")
+    const buttonTextColor = useColorModeValue("white", "black")
+    const buttonHoverBg = useColorModeValue("gray.800", "gray.200")
+    const linkColor = useColorModeValue("gray.700", "gray.400")
+
     return (
-        <Flex
-            align={'center'}
-            justify={'center'}
-        >
-            <Stack spacing={8} mx={'auto'} maxW={'lg'} py={12} px={6}>
-                <Stack align={'center'}>
-                    <Heading fontSize={'4xl'} textAlign={'center'}>
-                        Sign up
+        <Flex align={"center"} justify={"center"}>
+            <Stack align={"center"} spacing={4} mx={"auto"} maxW={"sm"} py={12} px={6}>
+                <Stack align={"center"}>
+                    <Heading fontSize={"xl"} textAlign={"center"} color={textColor}>
+                        Đăng ký
                     </Heading>
                 </Stack>
                 <Box
-                    rounded={'lg'}
-                    bg={useColorModeValue('white', 'gray.dark')}
-                    boxShadow={'lg'}
-                    p={8}>
-                    <Stack spacing={4}>
-                        <HStack>
-                            <Box>
-                                <FormControl isRequired>
-                                    <FormLabel>Full Name</FormLabel>
-                                    <Input type="text"
-                                        onChange={(e) => setInputs({ ...inputs, name: e.target.value })}
-                                        value={inputs.name} />
-                                </FormControl>
-                            </Box>
-                            <Box>
-                                <FormControl isRequired>
-                                    <FormLabel>Username</FormLabel>
-                                    <Input type="text"
-                                        onChange={(e) => setInputs({ ...inputs, username: e.target.value })}
-                                        value={inputs.username}
-                                    />
-                                </FormControl>
-                            </Box>
-                        </HStack>
+                    rounded={"lg"}
+                    bg={bgColor}
+                    p={0}
+                    w={{
+                        base: "full",
+                        sm: "380px",
+                    }}
+                >
+                    <Stack spacing={2}>
                         <FormControl isRequired>
-                            <FormLabel>Email address</FormLabel>
-                            <Input type="email"
-                                onChange={(e) => setInputs({ ...inputs, email: e.target.value })}
-                                value={inputs.email}
+                            <Input
+                                type="text"
+                                placeholder="Họ và tên"
+                                value={inputs.name}
+                                onChange={(e) =>
+                                    setInputs((prev) => ({
+                                        ...prev,
+                                        name: e.target.value,
+                                    }))
+                                }
+                                bg={inputBg}
+                                color={textColor}
+                                border="none"
+                                borderRadius="xl"
+                                _placeholder={{ color: placeholderColor }}
+                                size="lg"
+                                height="55px"
+                                _hover={{ border: "none" }}
+                                _focus={{
+                                    borderWidth: "1px",
+                                    borderStyle: "solid",
+                                    borderColor: inputBorder,
+                                    boxShadow: "none",
+                                    outline: "none",
+                                }}
+                                transition="none"
                             />
                         </FormControl>
                         <FormControl isRequired>
-                            <FormLabel>Password</FormLabel>
+                            <Input
+                                type="text"
+                                placeholder="Tên người dùng"
+                                value={inputs.username}
+                                onChange={(e) =>
+                                    setInputs((prev) => ({
+                                        ...prev,
+                                        username: e.target.value,
+                                    }))
+                                }
+                                bg={inputBg}
+                                color={textColor}
+                                border="none"
+                                borderRadius="xl"
+                                _placeholder={{ color: placeholderColor }}
+                                size="lg"
+                                height="55px"
+                                _hover={{ border: "none" }}
+                                _focus={{
+                                    borderWidth: "1px",
+                                    borderStyle: "solid",
+                                    borderColor: inputBorder,
+                                    boxShadow: "none",
+                                    outline: "none",
+                                }}
+                                transition="none"
+                            />
+                        </FormControl>
+                        <FormControl isRequired>
+                            <Input
+                                type="email"
+                                placeholder="Email"
+                                value={inputs.email}
+                                onChange={(e) =>
+                                    setInputs((prev) => ({
+                                        ...prev,
+                                        email: e.target.value,
+                                    }))
+                                }
+                                bg={inputBg}
+                                color={textColor}
+                                border="none"
+                                borderRadius="xl"
+                                _placeholder={{ color: placeholderColor }}
+                                size="lg"
+                                height="55px"
+                                _hover={{ border: "none" }}
+                                _focus={{
+                                    borderWidth: "1px",
+                                    borderStyle: "solid",
+                                    borderColor: inputBorder,
+                                    boxShadow: "none",
+                                    outline: "none",
+                                }}
+                                transition="none"
+                            />
+                        </FormControl>
+                        <FormControl isRequired>
                             <InputGroup>
-                                <Input type={showPassword ? 'text' : 'password'} 
-                                    onChange={(e) => setInputs({ ...inputs, password: e.target.value })}
+                                <Input
+                                    type={showPassword ? 'text' : 'password'}
+                                    placeholder="Mật khẩu"
                                     value={inputs.password}
+                                    onChange={(e) =>
+                                        setInputs((prev) => ({
+                                            ...prev,
+                                            password: e.target.value,
+                                        }))
+                                    }
+                                    bg={inputBg}
+                                    color={textColor}
+                                    border="none"
+                                    borderRadius="xl"
+                                    _placeholder={{ color: placeholderColor }}
+                                    size="lg"
+                                    height="55px"
+                                    _hover={{ border: "none" }}
+                                    _focus={{
+                                        borderWidth: "1px",
+                                        borderStyle: "solid",
+                                        borderColor: inputBorder,
+                                        boxShadow: "none",
+                                        outline: "none",
+                                    }}
+                                    transition="none"
                                 />
                                 <InputRightElement h={'full'}>
                                     <Button
                                         variant={'ghost'}
-                                        onClick={() => setShowPassword((showPassword) => !showPassword)}>
-                                        {showPassword ? <ViewIcon /> : <ViewOffIcon />}
+                                        onClick={() => setShowPassword((showPassword) => !showPassword)}
+                                        bg="transparent"
+                                        _hover={{ bg: "transparent" }}
+                                        _active={{ bg: "transparent" }}
+                                    >
+                                        {showPassword ? <ViewIcon color={textColor} /> : <ViewOffIcon color={textColor} />}
                                     </Button>
                                 </InputRightElement>
                             </InputGroup>
                         </FormControl>
-                        <Stack spacing={10} pt={2}>
-                            <Button
-                                loadingText="Submitting"
-                                size="lg"
-                                bg={useColorModeValue('gray.600', 'gray.700')}
-                                color={'white'}
-                                _hover={{
-                                    bg: useColorModeValue('gray.700', 'gray.800'),
-                                }}
-                                onClick={handleSignup}
-                                >
-                                Sign up
-                            </Button>
-                        </Stack>
-                        <Stack pt={6}>
-                            <Text align={'center'}>
-                                Already a user? <Link color={'blue.400'} onClick={() => dispatch(setAuthScreen('login'))}>Login</Link>
-                            </Text>
-                        </Stack>
+                        <Button
+                            size="lg"
+                            bg={buttonBg}
+                            color={buttonTextColor}
+                            _hover={{ bg: buttonHoverBg }}
+                            onClick={handleSignup}
+                            isLoading={loading}
+                            height="55px"
+                            borderRadius="xl"
+                        >
+                            Đăng ký
+                        </Button>
+                        <Text align={"center"} color={textColor}>
+                            Đã có tài khoản?{' '}
+                            <Link
+                                color={linkColor}
+                                onClick={() => dispatch(setAuthScreen('login'))}
+                            >
+                                Đăng nhập
+                            </Link>
+                        </Text>
                     </Stack>
                 </Box>
             </Stack>
