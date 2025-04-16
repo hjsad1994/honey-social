@@ -14,11 +14,13 @@ import {
     Textarea,
     useDisclosure,
     useColorModeValue,
-    Image,
+    Image, Input, IconButton, CloseButton,
 } from "@chakra-ui/react";
 import { useSelector, useDispatch } from "react-redux";
 import useShowToast from "../hooks/useShowToast";
 import { updatePost } from "../reducers/postReducer";
+import useImageUpload from '../hooks/useImageUpload'; // Import hook useImageUpload
+import { BsImage } from 'react-icons/bs'; // Import icon cho nút upload ảnhh
 
 const Actions = ({ post, onReplyAdded }) => {
     if (!post) return null;
@@ -30,8 +32,19 @@ const Actions = ({ post, onReplyAdded }) => {
     const [reply, setReply] = useState("");
     const [isReplying, setIsReplying] = useState(false);
     const { isOpen, onOpen, onClose } = useDisclosure();
+
     const showToast = useShowToast();
     const user = useSelector((state) => state.user.user);
+
+    const {
+        imagePreview,
+        imageBase64,
+        handleImageChange,
+        resetImage,
+    } = useImageUpload({
+        maxSize: 5 * 1024 * 1024, // 5MB
+        acceptedTypes: 'image/*',
+    });
 
     useEffect(() => {
         if (post && user && post.likes) {
@@ -44,15 +57,14 @@ const Actions = ({ post, onReplyAdded }) => {
         if (!user)
             return showToast("Error", "You must be logged in to reply to a post", "error");
         if (isReplying) return;
-        if (!reply.trim())
-            return showToast("Error", "Reply cannot be empty", "error");
+        if (!reply.trim() && !imageBase64) return showToast("Error", "Reply cannot be empty", "error");
 
         setIsReplying(true);
         try {
             const res = await fetch(`/api/posts/reply/${post._id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ text: reply }),
+                body: JSON.stringify({ text: reply, image: imageBase64 }),
             });
             const data = await res.json();
 
@@ -61,9 +73,18 @@ const Actions = ({ post, onReplyAdded }) => {
                 return;
             }
 
+            post.replies = [...post.replies, {
+                userId: user._id,
+                text: reply,
+                username: user.username,
+                userProfilePic: user.profilePic,
+                image: imageBase64,
+            }];
+
             showToast("Success", "Reply posted successfully", "success");
             onClose();
             setReply("");
+            resetImage();
 
             // Call the callback function to refresh post data on PostPage
             if (onReplyAdded) {
@@ -222,6 +243,36 @@ const Actions = ({ post, onReplyAdded }) => {
                         borderTop="1px solid"
                         borderColor={useColorModeValue("gray.300", "gray.light")}
                     >
+                        {/* Tiêu đề trả lời */}
+                        <Text fontSize="sm" color={useColorModeValue("dark", "white")} mb={4}>
+                            Trả lời cho bài viết: {post.Text?.substring(0, 50)}{post.Text?.length > 50 ? "..." : ""}
+                        </Text>
+
+                        {/* Hiển thị bài viết gốc */}
+                        <Box 
+                            p={4} 
+                            borderRadius="md" 
+                            bg={useColorModeValue("gray.100", "gray.700")} 
+                            mb={4}
+                        >
+                            <Text fontSize="md" fontWeight="bold" mb={2}>
+                                {post?.Text || "Bài viết không có nội dung"}
+                            </Text>
+                            {post?.Image && (
+                                <Box display="flex" justifyContent="center">
+                                    <Image
+                                        src={post.Image}
+                                        alt="Post image"
+                                        borderRadius="md"
+                                        maxHeight="300px"
+                                        objectFit="cover"
+                                        mb={2}
+                                    />
+                                </Box>
+                            )}
+                        </Box>
+
+                        {/* Hiển thị thông tin người dùng */}
                         <Flex alignItems="center" gap={3} mb={4}>
                             <Image
                                 src={user?.profilePic || "https://bit.ly/broken-link"}
@@ -260,19 +311,59 @@ const Actions = ({ post, onReplyAdded }) => {
                                 fontSize="lg"
                             />
                         </FormControl>
+
+                        {/* Hiển thị ảnh đã chọn */}
+                        {imagePreview && (
+                            <Box position="relative" mt={4}>
+                                <Image
+                                    src={imagePreview}
+                                    alt="Selected image"
+                                    borderRadius="md"
+                                    maxHeight="300px"
+                                />
+                                <CloseButton
+                                    position="absolute"
+                                    top={2}
+                                    right={2}
+                                    bg="blackAlpha.600"
+                                    color="white"
+                                    onClick={resetImage}
+                                    _hover={{ bg: "blackAlpha.800" }}
+                                />
+                            </Box>
+                        )}
+
+                        <Input
+                            type="file"
+                            accept="image/*"
+                            hidden
+                            onChange={handleImageChange}
+                        />
                     </ModalBody>
 
                     <ModalFooter
                         borderTop="1px solid"
                         borderColor={useColorModeValue("gray.300", "gray.light")}
                     >
-                        <Flex width="100%" justifyContent="flex-end">
+                        <Flex width="100%" justifyContent="space-between" alignItems="center">
+                            <IconButton
+                                color={useColorModeValue("black", "white")}
+                                aria-label="Upload image"
+                                icon={<BsImage size="20px" />}
+                                variant="ghost"
+                                onClick={() => document.querySelector('input[type="file"]').click()}
+                                _hover={{
+                                    bg: useColorModeValue("gray.100", "gray.700"),
+                                }}
+                            />
                             <Button
                                 colorScheme="blue"
                                 px={6}
                                 borderRadius="full"
                                 onClick={handleReply}
                                 isLoading={isReplying}
+                                isDisabled={!reply.trim() && !imagePreview} // Nút sẽ bị vô hiệu hóa nếu không có chữ hoặc ảnh
+                                opacity={!reply.trim() && !imagePreview ? 0.5 : 1} // Ẩn mờ nút nếu không có chữ hoặc ảnh
                                 bg="white"
                                 color="black"
                                 border="1px solid"
