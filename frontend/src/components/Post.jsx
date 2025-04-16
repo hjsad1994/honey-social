@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
     Flex, Avatar, Box, Text, Image, Spinner, 
@@ -11,6 +11,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { deletePost } from '../reducers/postReducer';
 import Actions from './Actions';
 import useShowToast from '../hooks/useShowToast';
+import Comment from './Comment';
 
 const formatTimeCompact = (date) => {
   const now = new Date();
@@ -37,7 +38,32 @@ const formatTimeCompact = (date) => {
   return `${diffInYears}y`;
 };
 
-const Post = ({ post, postedBy }) => {
+const Post = ({ post: initialPost, postedBy }) => {
+    // Tạo state local để quản lý comments
+    const [comments, setComments] = useState([]);
+    const [commentsVersion, setCommentsVersion] = useState(0); // Thêm state version để buộc re-render
+    
+    // Khởi tạo comments từ prop khi component mount hoặc post thay đổi
+    useEffect(() => {
+        if (initialPost?.replies) {
+            console.log(`Post ${initialPost._id} có ${initialPost.replies.length} bình luận`);
+            setComments(initialPost.replies);
+        }
+    }, [initialPost._id]); // Chỉ cập nhật khi post ID thay đổi
+
+    // Callback để xóa comment khỏi UI
+    const handleDeleteComment = (commentId) => {
+        console.log(`Xóa comment có ID ${commentId} khỏi UI`);
+        
+        // Cập nhật state bằng cách lọc bỏ comment vừa xóa
+        setComments(prevComments => 
+            prevComments.filter(comment => comment._id !== commentId)
+        );
+        
+        // Tăng version để buộc re-render
+        setCommentsVersion(prev => prev + 1);
+    };
+
     // Hooks at the top-level
     const [loading, setLoading] = useState(true);
     const [postUser, setPostUser] = useState(null);
@@ -62,6 +88,19 @@ const Post = ({ post, postedBy }) => {
 
     // Determine if the current user is the post author
     const isAuthor = currentUser && postUser && currentUser._id === postUser._id;
+    useEffect(() => {
+        console.log("Bài viết/bình luận thay đổi, cập nhật UI");
+        // Nếu bạn có thêm logic để cập nhật UI ở đây
+    }, [initialPost.replies?.length]); // Phản ứng khi số lượng bình luận thay đổi
+
+    // Console.log để debug
+    useEffect(() => {
+        console.log("Post updated:", {
+            id: initialPost._id,
+            replyCount: initialPost.replies?.length || 0,
+            replies: initialPost.replies?.map(r => r._id)
+        });
+    }, [initialPost.replies]);
 
     // Fetch user data when component mounts
     useEffect(() => {
@@ -103,8 +142,8 @@ const Post = ({ post, postedBy }) => {
     const handleDeletePost = async () => {
         setIsDeleting(true);
         try {
-            const requestBody = post.img ? { imageUrl: post.img } : {};
-            const res = await fetch(`/api/posts/${post._id}`, {
+            const requestBody = initialPost.img ? { imageUrl: initialPost.img } : {};
+            const res = await fetch(`/api/posts/${initialPost._id}`, {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(requestBody)
@@ -115,10 +154,10 @@ const Post = ({ post, postedBy }) => {
                 onClose();
                 return;
             }
-            dispatch(deletePost(post._id));
+            dispatch(deletePost(initialPost._id));
             showToast("Success", "Post deleted successfully", "success");
             onClose();
-            if (window.location.pathname.includes(`/post/${post._id}`)) {
+            if (window.location.pathname.includes(`/post/${initialPost._id}`)) {
                 navigate(`/${postUser.username}`);
             }
         } catch (error) {
@@ -141,7 +180,7 @@ const Post = ({ post, postedBy }) => {
 
     return (
         <>
-            <Link to={`/${postUser.username}/post/${post._id}`}>
+            <Link to={`/${postUser.username}/post/${initialPost._id}`}>
                 <Flex gap={3} mb={4} py={5}>
                     <Flex flexDirection="column" alignItems="center">
                         <Avatar
@@ -161,7 +200,7 @@ const Post = ({ post, postedBy }) => {
                             </Flex>
                             <Flex gap={4} alignContent="center">
                                 <Text fontSize="xs" width={20} mt={1} textAlign={'right'} color="gray.light">
-                                    {formatTimeCompact(new Date(post.createdAt))}
+                                    {formatTimeCompact(new Date(initialPost.createdAt))}
                                 </Text>
                                 <Box onClick={(e) => e.preventDefault()} ml={2}>
                                     <Menu>
@@ -204,7 +243,7 @@ const Post = ({ post, postedBy }) => {
                                                     _hover={{ bg: copyLinkHoverBg }}
                                                     onClick={(e) => {
                                                         e.preventDefault();
-                                                        const postUrl = `${window.location.origin}/${postUser.username}/post/${post._id}`;
+                                                        const postUrl = `${window.location.origin}/${postUser.username}/post/${initialPost._id}`;
                                                         navigator.clipboard.writeText(postUrl);
                                                         showToast("Success", "Link copied to clipboard", "success");
                                                     }}
@@ -218,25 +257,37 @@ const Post = ({ post, postedBy }) => {
                             </Flex>
                         </Flex>
 
-                        <Text fontSize="sm">{post.text}</Text>
+                        <Text fontSize="sm">{initialPost.text}</Text>
 
-                        {post.img && (
+                        {initialPost.img && (
                             <Box
                                 borderRadius={6}
                                 overflow="hidden"
                                 border="1px solid"
                                 borderColor="gray.light"
                             >
-                                <Image src={post.img} w="full" alt={post.text} />
+                                <Image src={initialPost.img} w="full" alt={initialPost.text} />
                             </Box>
                         )}
 
                         <Flex gap={3} my={1}>
-                            <Actions post={post} />
+                            <Actions post={initialPost} />
                         </Flex>
                     </Flex>
                 </Flex>
             </Link>
+
+            {/* QUAN TRỌNG: Sử dụng comments từ state local, không dùng initialPost.replies */}
+            <Box>
+                {comments.map(reply => (
+                    <Comment 
+                        key={`${reply._id}-v${commentsVersion}`} 
+                        reply={reply} 
+                        postId={initialPost._id} 
+                        onDeleteReply={handleDeleteComment}
+                    />
+                ))}
+            </Box>
 
             <Modal isOpen={isOpen} onClose={onClose} isCentered>
             <ModalOverlay bg="blackAlpha.600" backdropFilter="blur(5px)" />
@@ -303,4 +354,4 @@ const Post = ({ post, postedBy }) => {
     );
 };
 
-export default Post;
+export default React.memo(Post);

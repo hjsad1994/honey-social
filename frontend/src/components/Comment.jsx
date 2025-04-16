@@ -1,36 +1,78 @@
-import React, { useState, useEffect } from 'react';
-import { Flex, Avatar, Text, Divider, Box } from '@chakra-ui/react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import {
+    Flex,
+    Avatar,
+    Text,
+    Divider,
+    Box,
+    Menu,
+    MenuButton,
+    MenuList,
+    MenuItem,
+    Modal,
+    ModalOverlay,
+    ModalContent,
+    ModalHeader,
+    ModalBody,
+    ModalFooter,
+    Button,
+    Portal,
+    useDisclosure,
+    useColorModeValue
+} from '@chakra-ui/react';
 import { BsThreeDots } from 'react-icons/bs';
 import { useSelector, useDispatch } from 'react-redux';
 import useShowToast from '../hooks/useShowToast';
-import { updatePost } from '../reducers/postReducer';
+import { updatePost, removeReply } from '../reducers/postReducer';
 
-function Comment({ reply, postId }) {
-    // Add check for reply prop
+const Comment = ({ reply, postId, onDeleteReply }) => {
+    // Kiểm tra props reply có hợp lệ hay không
     if (!reply) return null;
-    
+
     const dispatch = useDispatch();
-    // Extract all necessary data from reply object
-    const { text, username, userProfilePic, createdAt, likes = [] } = reply;
+    const { text, username, userProfilePic, likes = [], userId = "", _id: replyId } = reply;
+    // Lưu timestamp vào state để không tạo mới đối tượng Date mỗi lần render
+    const [commentTime] = useState(reply.createdAt || new Date());
+
     const [isLiked, setIsLiked] = useState(false);
     const [likesCount, setLikesCount] = useState(likes.length);
     const [isLiking, setIsLiking] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
     const currentUser = useSelector(state => state.user.user);
     const showToast = useShowToast();
+    
+    // Track if component is mounted
+    const isMounted = useRef(true);
+    
+    useEffect(() => {
+        return () => {
+            isMounted.current = false;
+        };
+    }, []);
 
-    // Format time function
+    // Sử dụng modal để hiển thị xác nhận xoá
+    const { isOpen, onOpen, onClose } = useDisclosure();
+
+    // Các giá trị dùng cho theme
+    const menuListBg = useColorModeValue("white", "#1E1E1E");
+    const menuListBorder = useColorModeValue("gray.200", "gray.700");
+    const menuItemBg = useColorModeValue("white", "#1E1E1E");
+    const deleteHoverBg = useColorModeValue("red.50", "whiteAlpha.200");
+    const modalContentBg = useColorModeValue("white", "#1E1E1E");
+    const cancelBtnBg = useColorModeValue("gray.200", "whiteAlpha.200");
+    const cancelBtnHoverBg = useColorModeValue("gray.300", "whiteAlpha.300");
+
+    // Xác định xem người dùng hiện tại có phải tác giả của bình luận hay không
+    const isAuthor = currentUser && userId === currentUser._id;
+
+    // Hàm định dạng thời gian hiển thị dưới dạng compact
     const formatTimeCompact = (date) => {
         try {
+            if (!date) return "";
             const now = new Date();
             const postDate = new Date(date);
-
-            // Check if date is valid
-            if (isNaN(postDate.getTime())) {
-                return ""; // Return empty string for invalid dates
-            }
-
+            if (isNaN(postDate.getTime())) return "";
             const diffInSeconds = Math.floor((now - postDate) / 1000);
-
             if (diffInSeconds < 60) return `${diffInSeconds}s`;
             const diffInMinutes = Math.floor(diffInSeconds / 60);
             if (diffInMinutes < 60) return `${diffInMinutes}m`;
@@ -50,7 +92,7 @@ function Comment({ reply, postId }) {
         }
     };
 
-    // Check if current user has liked this comment
+    // Kiểm tra nếu người dùng hiện tại đã like bình luận
     useEffect(() => {
         if (currentUser && likes) {
             setIsLiked(likes.includes(currentUser._id));
@@ -58,34 +100,33 @@ function Comment({ reply, postId }) {
         }
     }, [currentUser, likes]);
 
-    // Handle like/unlike functionality
+    // Xử lý thích/bỏ thích bình luận
     const handleLike = async () => {
         if (!currentUser) {
-            showToast("Error", "You must be logged in to like comments", "error");
+            showToast("Error", "Bạn phải đăng nhập để thích bình luận", "error");
             return;
         }
-        
         if (isLiking) return;
-        
+
         setIsLiking(true);
         const wasLiked = isLiked;
         setIsLiked(!wasLiked);
         setLikesCount(prev => wasLiked ? prev - 1 : prev + 1);
-        
+
         try {
             const res = await fetch(`/api/posts/reply/like/${reply._id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" }
             });
-            
+
             const data = await res.json();
             if (data.error && data.error !== "reply liked successfully" && data.error !== "reply unliked successfully") {
-                // Revert UI changes if error
+                // Nếu gặp lỗi, hoàn tác UI
                 setIsLiked(wasLiked);
                 setLikesCount(prev => wasLiked ? prev + 1 : prev - 1);
                 showToast("Error", data.error, "error");
             } else {
-                // Success - update Redux store
+                // Sau 300ms gọi API cập nhật lại post trong Redux store
                 setTimeout(() => {
                     fetch(`/api/posts/${postId}`)
                         .then(res => res.json())
@@ -98,7 +139,6 @@ function Comment({ reply, postId }) {
                 }, 300);
             }
         } catch (error) {
-            // Revert UI changes if error
             setIsLiked(wasLiked);
             setLikesCount(prev => wasLiked ? prev + 1 : prev - 1);
             showToast("Error", error.message, "error");
@@ -107,10 +147,63 @@ function Comment({ reply, postId }) {
         }
     };
 
-    // Use proper avatar with fallbacks
-    const avatarSrc = userProfilePic || 
-                     (currentUser && username === currentUser.username ? currentUser.profilePic : null) ||
-                     "/tai.png";
+    // Xác nhận xoá bình luận
+    const confirmDelete = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (!currentUser || !isAuthor) {
+            showToast("Error", "Bạn chỉ có thể xoá bình luận của chính mình", "error");
+            return;
+        }
+        if (isDeleting) return;
+        onOpen();
+    };
+
+    // Xử lý xoá bình luận với optimistic update
+    const handleDeleteComment = async () => {
+        setIsDeleting(true);
+        
+        // Đóng modal trước
+        onClose();
+        
+        // QUAN TRỌNG: Đảm bảo callback được gọi TRƯỚC tiên để cập nhật UI ngay lập tức
+        if (onDeleteReply) {
+            console.log(`Component Comment gọi callback onDeleteReply với ID: ${replyId}`);
+            onDeleteReply(replyId);
+        }
+        
+        try {
+            // Sau đó gọi API
+            const res = await fetch(`/api/posts/${postId}/replies/${replyId}`, {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+            });
+
+            const data = await res.json();
+            
+            // Redux dispatch không quan trọng cho UI (nó chỉ đồng bộ state)
+            if (!data.error || data.error === "reply deleted successfully") {
+                dispatch(removeReply({ postId, replyId }));
+                showToast("Success", "Bình luận đã được xóa", "success");
+            } else {
+                console.error("API error:", data.error);
+                showToast("Error", data.error, "error");
+            }
+        } catch (error) {
+            console.error("Lỗi khi xóa bình luận:", error);
+            showToast("Error", error.message || "Lỗi khi xóa bình luận", "error");
+        } finally {
+            if (isMounted.current) {
+                setIsDeleting(false);
+            }
+        }
+    };
+
+    // Xử lý src cho avatar với các trường hợp fallback
+    const avatarSrc = userProfilePic ||
+        (currentUser && username === currentUser.username ? currentUser.profilePic : null) ||
+        "/tai.png";
 
     return (
         <>
@@ -121,9 +214,34 @@ function Comment({ reply, postId }) {
                         <Text fontSize="sm" fontWeight="bold">{username}</Text>
                         <Flex gap={2} alignItems="center">
                             <Text fontSize="sm" color="gray.light">
-                                {formatTimeCompact(createdAt)}
+                                {formatTimeCompact(commentTime)}
                             </Text>
-                            <BsThreeDots />
+                            <Box>
+                                <Menu>
+                                    <MenuButton>
+                                        <BsThreeDots />
+                                    </MenuButton>
+                                    <Portal>
+                                        <MenuList
+                                            bg={menuListBg}
+                                            borderColor={menuListBorder}
+                                            boxShadow="md"
+                                        >
+                                            {isAuthor && (
+                                                <MenuItem
+                                                    bg={menuItemBg}
+                                                    color="red.500"
+                                                    _hover={{ bg: deleteHoverBg }}
+                                                    onClick={confirmDelete}
+                                                    isDisabled={isDeleting}
+                                                >
+                                                    {isDeleting ? "Đang xoá..." : "Xoá bình luận"}
+                                                </MenuItem>
+                                            )}
+                                        </MenuList>
+                                    </Portal>
+                                </Menu>
+                            </Box>
                         </Flex>
                     </Flex>
                     <Text>{text}</Text>
@@ -158,9 +276,39 @@ function Comment({ reply, postId }) {
                     </Flex>
                 </Flex>
             </Flex>
+
+            {/* Modal xác nhận xoá */}
+            <Modal isOpen={isOpen} onClose={onClose} isCentered>
+                <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(5px)" />
+                <ModalContent bg={modalContentBg} borderRadius="lg" mx={4}>
+                    <ModalHeader>Xoá bình luận</ModalHeader>
+                    <ModalBody pb={6}>
+                        <Text>
+                            Bạn có chắc chắn muốn xoá bình luận này? Hành động này không thể hoàn tác.
+                        </Text>
+                    </ModalBody>
+                    <ModalFooter gap={3}>
+                        <Button
+                            onClick={onClose}
+                            bg={cancelBtnBg}
+                            _hover={{ bg: cancelBtnHoverBg }}
+                        >
+                            Huỷ
+                        </Button>
+                        <Button
+                            colorScheme="red"
+                            onClick={handleDeleteComment}
+                            isLoading={isDeleting}
+                        >
+                            Xoá
+                        </Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
+
             <Divider my={4} />
         </>
     );
-}
+};
 
 export default Comment;

@@ -250,6 +250,44 @@ const likeUnlikeReply = async (req, res) => {
         console.log("error in likeUnlikeReply controller", err.message);
     }
 };
+const deleteReply = async (req, res) => {
+    try {
+        const postId = req.params.id;
+        const replyId = req.params.replyId;
+        const userId = req.user._id;
+        
+        // Find the post containing this reply
+        const post = await Post.findById(postId);
+        
+        if (!post) {
+            return res.status(404).json({ error: "Post not found" });
+        }
+        
+        // Find the specific reply
+        const reply = post.replies.find(reply => reply._id.toString() === replyId);
+        
+        if (!reply) {
+            return res.status(404).json({ error: "Reply not found" });
+        }
+        
+        // Check if the user is authorized to delete this reply
+        if (reply.userId.toString() !== userId.toString()) {
+            return res.status(401).json({ error: "Not authorized to delete this reply" });
+        }
+        
+        // Remove the reply
+        post.replies = post.replies.filter(reply => reply._id.toString() !== replyId);
+        
+        // Save the updated post
+        await post.save();
+        
+        res.status(200).json({ error: "reply deleted successfully" });
+        
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+        console.log("Error in deleteReply controller", err.message);
+    }
+};
 const getFeedPosts = async (req, res) => {
     try {
         const userId = req.user._id
@@ -285,4 +323,4 @@ const getUserPosts = async (req, res) => {
         res.status(500).json({ error: error.message })
     } 
 }
-export { createPost, getPost, deletePost, likeUnlikePost, replyToPost, likeUnlikeReply, getFeedPosts, getUserPosts }
+export { createPost, getPost, deletePost, likeUnlikePost, replyToPost, likeUnlikeReply, getFeedPosts, getUserPosts, deleteReply }
