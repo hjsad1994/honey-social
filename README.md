@@ -1,6 +1,6 @@
 # Honey Social Media Platform
 
-![Honey Logo](path/to/honey-logo.png)
+![Honey Logo](https://github.com/hjsad1994/honey-social/blob/main/frontend/public/dark-logo.svg)
 
 Honey là một nền tảng mạng xã hội hiện đại, cho phép người dùng kết nối, chia sẻ bài viết kèm hình ảnh, theo dõi người dùng khác và tương tác qua lượt thích cũng như phản hồi.
 
