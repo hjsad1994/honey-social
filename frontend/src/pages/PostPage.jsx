@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  Flex, Avatar, Box, Text, Image, 
+import {
+  Flex, Avatar, Box, Text, Image,
   Divider, Button, Spinner, useColorModeValue,
   Modal, ModalOverlay, ModalContent, ModalHeader,
   ModalBody, ModalFooter, useDisclosure,
@@ -20,7 +20,7 @@ const PostPage = () => {
   const [loading, setLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
-  
+
   const showToast = useShowToast();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -44,20 +44,20 @@ const PostPage = () => {
       try {
         const res = await fetch(`/api/posts/${pid}`);
         const data = await res.json();
-        
+
         if (data.error) {
           showToast("Error", data.error, "error");
           navigate('/');
           return;
         }
-        
+
         setPost(data);
-        
+
         // Fetch post author data
         if (data.postedBy) {
           const userRes = await fetch(`/api/users/profile/${data.postedBy}`);
           const userData = await userRes.json();
-          
+
           if (!userData.error) {
             setUser(userData.user);
           }
@@ -68,7 +68,7 @@ const PostPage = () => {
         setLoading(false);
       }
     };
-    
+
     fetchPost();
   }, [pid, showToast, navigate]);
 
@@ -77,12 +77,12 @@ const PostPage = () => {
     try {
       const res = await fetch(`/api/posts/${pid}`);
       const data = await res.json();
-      
+
       if (data.error) {
         showToast("Error", data.error, "error");
         return;
       }
-      
+
       setPost(data);
     } catch (error) {
       showToast("Error", error.message, "error");
@@ -93,7 +93,7 @@ const PostPage = () => {
   const confirmDelete = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (!currentUser || !user || currentUser._id !== user._id) {
       showToast("Error", "You can only delete your own posts", "error");
       return;
@@ -114,13 +114,13 @@ const PostPage = () => {
         body: JSON.stringify(requestBody)
       });
       const data = await res.json();
-      
+
       if (data.error && data.error !== "post deleted successfully") {
         showToast("Error", data.error, "error");
         onClose();
         return;
       }
-      
+
       dispatch(deletePost(post._id));
       showToast("Success", "Post deleted successfully", "success");
       onClose();
@@ -138,14 +138,14 @@ const PostPage = () => {
     try {
       const now = new Date();
       const postDate = new Date(date);
-      
+
       // Check if date is valid
       if (isNaN(postDate.getTime())) {
         return ""; // Return empty string for invalid dates
       }
-      
+
       const diffInSeconds = Math.floor((now - postDate) / 1000);
-      
+
       if (diffInSeconds < 60) return `${diffInSeconds}s`;
       const diffInMinutes = Math.floor(diffInSeconds / 60);
       if (diffInMinutes < 60) return `${diffInMinutes}m`;
@@ -176,7 +176,7 @@ const PostPage = () => {
 
   // Return empty if post not found
   if (!post) return null;
-  
+
   // Determine if current user is the post author
   const isAuthor = currentUser && user && currentUser._id === user._id;
 
@@ -196,7 +196,7 @@ const PostPage = () => {
           <Text fontSize="xs" width={20} mt={1} textAlign="right" color="gray.light">
             {formatTimeCompact(post.createdAt || new Date())}
           </Text>
-          
+
           {/* Replace DeleteIcon with Menu */}
           <Box onClick={(e) => e.preventDefault()} ml={2}>
             <Menu>
@@ -283,16 +283,13 @@ const PostPage = () => {
       </Flex>
 
       <Divider my={4} />
-      
+
       {post.replies && post.replies.length > 0 ? (
         post.replies.map((reply, index) => (
           <Comment
             key={reply._id || index}
-            comment={reply.text}
-            username={reply.username}
-            userAvatar={reply.userProfilePic}
-            createAt={formatTimeCompact(reply.createdAt)}
-            likes={reply.likes?.length || 0}
+            reply={reply}
+            postId={post._id}
           />
         ))
       ) : (

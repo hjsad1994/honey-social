@@ -1,4 +1,5 @@
 import User from "../models/userModel.js"
+import Post from "../models/postModel.js"  // Add this import
 import bcrypt from "bcryptjs"
 import generateTokenAndSetCookie from "../utils/helpers/generateTokenAndSetCookie.js"
 import { v2 as cloudinary } from "cloudinary"
@@ -261,6 +262,18 @@ const updateUser = async (req, res) => {
         
         // Save updated user
         user = await user.save();
+        
+        // Find all posts that this user replied to and update username and userProfilePic fields
+        await Post.updateMany(
+            { "replies.userId": userId },
+            {
+                $set: {
+                    "replies.$[reply].username": user.username,
+                    "replies.$[reply].userProfilePic": user.profilePic,
+                },
+            },
+            { arrayFilters: [{ "reply.userId": userId }] }
+        );
         
         // Send successful response with user data and cloudinary info
         res.status(200).json({ 
