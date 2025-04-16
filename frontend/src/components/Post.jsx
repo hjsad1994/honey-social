@@ -239,33 +239,66 @@ const Post = ({ post, postedBy }) => {
             </Link>
 
             <Modal isOpen={isOpen} onClose={onClose} isCentered>
-                <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(5px)" />
-                <ModalContent bg={modalContentBg} borderRadius="lg" mx={4}>
-                    <ModalHeader>Delete Post</ModalHeader>
-                    <ModalBody pb={6}>
-                        <Text>
-                            Are you sure you want to delete this post? This action cannot be undone.
-                        </Text>
-                    </ModalBody>
-                    <ModalFooter gap={3}>
-                        <Button
-                            onClick={onClose}
-                            bg={cancelBtnBg}
-                            _hover={{ bg: cancelBtnHoverBg }}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            colorScheme="red"
-                            onClick={handleDeletePost}
-                            isLoading={isDeleting}
-                            loadingText="Deleting..."
-                        >
-                            Delete
-                        </Button>
-                    </ModalFooter>
-                </ModalContent>
-            </Modal>
+            <ModalOverlay bg="blackAlpha.600" backdropFilter="blur(5px)" />
+            <ModalContent
+                bg={useColorModeValue("white", "black")} // White in light mode, black in dark mode
+                borderRadius="15px"
+                mx={4}
+                py={6}
+                px={4}
+                textAlign="center"
+            >
+                <ModalHeader
+                    fontSize="lg"
+                    fontWeight="bold"
+                    p={0}
+                    mb={4}
+                    color={useColorModeValue("black", "white")} // Black in light mode, white in dark mode
+                    textAlign="center"
+                >
+                    Xóa bài viết?
+                </ModalHeader>
+                <ModalBody
+                    fontSize="sm"
+                    color={useColorModeValue("gray.600", "gray.300")} // Gray in light mode, lighter gray in dark mode
+                    p={0}
+                    mb={6}
+                >
+                    Nếu xóa bài viết này, bạn sẽ không thể khôi phục được nữa.
+                </ModalBody>
+                <ModalFooter
+                    display="flex"
+                    justifyContent="space-between"
+                    p={0}
+                    w="100%"
+                >
+                    <Button
+                        onClick={onClose}
+                        bg={useColorModeValue("gray.100", "gray.700")} // Light gray in light mode, dark gray in dark mode
+                        color={useColorModeValue("black", "white")} // Black in light mode, white in dark mode
+                        _hover={{ bg: useColorModeValue("gray.200", "gray.600") }}
+                        w="48%"
+                        borderRadius="md"
+                    >
+                        Huỷ
+                    </Button>
+                    <Button
+                        bg={useColorModeValue("black", "white")} // Sáng: nền đen, Tối: nền trắng
+                        color={useColorModeValue("white", "black")} // Sáng: chữ trắng, Tối: chữ đen
+                        _hover={{
+                            bg: useColorModeValue("gray.800", "gray.200"), // Sáng: xám đậm, Tối: xám nhạt
+                        }}
+                        onClick={handleDeletePost}
+                        isLoading={isDeleting}
+                        loadingText="Deleting..."
+                        w="48%"
+                        borderRadius="md"
+                    >
+                        Xoá
+                    </Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
         </>
     );
 };
