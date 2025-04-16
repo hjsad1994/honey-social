@@ -42,6 +42,11 @@ const postSchema = mongoose.Schema(
                     ref: "User",
                     default: [],
                 },
+                createdAt: {
+                    type: Date,
+                    default: Date.now,
+                
+                }
             },
         ],
     },
