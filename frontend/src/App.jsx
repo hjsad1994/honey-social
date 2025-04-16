@@ -31,7 +31,7 @@ function App() {
           <Route path="/:username/post/:pid" element={<PostPage />} />
         </Routes>
         {user && <LogoutButton />}
-        {user && <CreatePosts />}
+        {/* {user && <CreatePosts />} */}
       </Container>
     </>
   );
