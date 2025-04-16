@@ -37,7 +37,8 @@ const PostPage = () => {
   const modalContentBg = useColorModeValue("white", "gray.800");
   const cancelBtnBg = useColorModeValue("gray.100", "gray.700");
   const cancelBtnHoverBg = useColorModeValue("gray.200", "gray.600");
-
+  const cardBg = useColorModeValue("white", "#161617");
+  const shadowColor = useColorModeValue("lg", "dark-lg");
   // Fetch post data when component mounts
   useEffect(() => {
     const fetchPost = async () => {
@@ -215,6 +216,16 @@ const PostPage = () => {
 
   return (
     <>
+      <Box
+        p={6}
+        borderRadius="30px"
+        borderWidth="0.5px" 
+        borderStyle="solid"
+        borderColor={useColorModeValue("blackAlpha.300", "whiteAlpha.200")}
+        bg={cardBg}
+        boxShadow={shadowColor}
+        transition="all 0.3s ease"
+      >
       <Flex>
         <Flex w="full" alignItems="center" gap={3}>
           <Avatar src={user?.profilePic} size="md" name={user?.name} />
@@ -222,7 +233,9 @@ const PostPage = () => {
             <Text fontSize="sm" fontWeight="bold">
               {user?.username}
             </Text>
+
             <Image src="/verified.png" w="4" h="4" alt="Verified" />
+            <Text fontSize="sm" color="gray.light">{formatTimeCompact(post.createdAt || new Date())}</Text>
           </Flex>
         </Flex>
         <Flex gap={4} alignItems="center">
@@ -359,6 +372,7 @@ const PostPage = () => {
           </ModalFooter>
         </ModalContent>
       </Modal>
+    </Box>
     </>
   );
 };

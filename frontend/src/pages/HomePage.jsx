@@ -52,14 +52,16 @@ const HomePage = () => {
     // Render posts when available
     return (
         <>
-            <Box
-                p={6}
-                borderRadius="xl"
-                bg={cardBg}
-                boxShadow={shadowColor}
-                transition="all 0.3s ease"
-            >
-
+      <Box
+        p={6}
+        borderRadius="30px"
+        borderWidth="0.5px" 
+        borderStyle="solid"
+        borderColor={useColorModeValue("blackAlpha.300", "whiteAlpha.200")}
+        bg={cardBg}
+        boxShadow={shadowColor}
+        transition="all 0.3s ease"
+      >
 
                 {posts.map((post) => (
                     <Post

@@ -313,9 +313,7 @@ const CreatePosts = () => {
                                 px={6}
                                 borderRadius="full"
                                 onClick={HandleCreatePost}
-                                isDisabled={!postText.trim() && !imagePreview} // Ẩn mờ nút nếu không có nội dung hoặc ảnh
-                                isLoading={loading}
-                                opacity={!postText.trim() && !imagePreview ? 0.5 : 1} // Thêm hiệu ứng mờ
+                                // opacity={!postText.trim() && !imagePreview ? 0.5 : 1} // Thêm hiệu ứng mờ
                                 bg="white" // Màu nền trắng
                                 color="black" // Chữ màu đen
                                 border="1px solid" // Thêm viền
