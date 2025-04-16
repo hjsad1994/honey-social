@@ -4,28 +4,23 @@ import {
     Flex,
     Box,
     FormControl,
-    FormLabel,
     Input,
-    InputGroup,
-    InputRightElement,
     Stack,
     Button,
     Heading,
     Text,
-    useColorModeValue,
     Link,
+    useColorModeValue,
 } from "@chakra-ui/react";
 import { useState } from "react";
-import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
 import { useDispatch } from "react-redux";
-import { setAuthScreen } from "../reducers/authReducer"; 
+import { setAuthScreen } from "../reducers/authReducer";
 import { setUser } from "../reducers/userReducer";
 import useShowToast from "../hooks/useShowToast";
 
 export default function LoginCard() {
-    const [showPassword, setShowPassword] = useState(false);
-    const dispatch = useDispatch();
     const [loading, setLoading] = useState(false);
+    const dispatch = useDispatch();
     const [inputs, setInputs] = useState({
         username: "",
         password: "",
@@ -47,7 +42,6 @@ export default function LoginCard() {
                 showToast("Error", data.error, "error");
                 return;
             }
-            // Update Redux store
             dispatch(setUser(data));
         } catch (error) {
             showToast("Error", error.toString(), "error");
@@ -56,29 +50,39 @@ export default function LoginCard() {
         }
     };
 
+    // Define light and dark mode values using useColorModeValue
+    const bgColor = useColorModeValue("gray.100", "transparent");
+    const textColor = useColorModeValue("black", "white");
+    const inputBg = useColorModeValue("rgba(104, 101, 101, 0.3)", "rgba(71, 68, 68, 0.3)");
+    const inputBorder = useColorModeValue("gray.300", "white");
+    const placeholderColor = useColorModeValue("gray.700", "gray.400");
+    const buttonBg = useColorModeValue("black", "white");
+    const buttonTextColor = useColorModeValue("white", "black");
+    const buttonHoverBg = useColorModeValue("gray.800", "gray.200");
+    const linkColor = useColorModeValue("gray.700", "gray.400");
+
     return (
         <Flex align={"center"} justify={"center"}>
-            <Stack spacing={8} mx={"auto"} maxW={"lg"} py={12} px={6}>
+            <Stack  align={"center"} spacing={4} mx={"auto"} maxW={"sm"} py={12} px={6}>
                 <Stack align={"center"}>
-                    <Heading fontSize={"4xl"} textAlign={"center"}>
-                        Login
+                    <Heading fontSize={"xl"} textAlign={"center"} color={textColor}>
+                        Đăng nhập 
                     </Heading>
                 </Stack>
                 <Box
                     rounded={"lg"}
-                    bg={useColorModeValue("white", "gray.dark")}
-                    boxShadow={"lg"}
-                    p={8}
+                    bg={bgColor}
+                    p={0}
                     w={{
                         base: "full",
-                        sm: "400px",
+                        sm: "380px",
                     }}
                 >
-                    <Stack spacing={4}>
-                        <FormControl isRequired>
-                            <FormLabel>Username</FormLabel>
+                    <Stack spacing={2}>
+                    <FormControl isRequired>
                             <Input
                                 type="text"
+                                placeholder="Tên người dùng, số điện thoại hoặc email"
                                 value={inputs.username}
                                 onChange={(e) =>
                                     setInputs((prev) => ({
@@ -86,60 +90,80 @@ export default function LoginCard() {
                                         username: e.target.value,
                                     }))
                                 }
+                                bg={inputBg}
+                                color={textColor}
+                                border="none" // Remove default border
+                                borderRadius="xl"
+                                _placeholder={{ color: placeholderColor }}
+                                size="lg"
+                              height="55px"
+                                _hover={{ border: "none" }} // No border on hover
+                                _focus={{
+                                    borderWidth: "1px", // Fixed 1px border
+                                    borderStyle: "solid",
+                                    borderColor: inputBorder,
+                                    boxShadow: "none", // Remove focus shadow/glow
+                                    outline: "none", // Remove default outline
+                                }}
+                                transition="none" // Disable all transitions
                             />
                         </FormControl>
                         <FormControl isRequired>
-                            <FormLabel>Password</FormLabel>
-                            <InputGroup>
-                                <Input
-                                    type={showPassword ? "text" : "password"}
-                                    value={inputs.password}
-                                    onChange={(e) =>
-                                        setInputs((prev) => ({
-                                            ...prev,
-                                            password: e.target.value,
-                                        }))
-                                    }
-                                />
-                                <InputRightElement h={"full"}>
-                                    <Button
-                                        variant={"ghost"}
-                                        onClick={() => setShowPassword((prev) => !prev)}
-                                    >
-                                        {showPassword ? <ViewIcon /> : <ViewOffIcon />}
-                                    </Button>
-                                </InputRightElement>
-                            </InputGroup>
-                        </FormControl>
-                        <Stack spacing={10} pt={2}>
-                            <Button
-                                loadingText="Logging in"
+                            <Input
+                                type="password"
+                                placeholder="Mật khẩu"
+                                value={inputs.password}
+                                onChange={(e) =>
+                                    setInputs((prev) => ({
+                                        ...prev,
+                                        password: e.target.value,
+                                    }))
+                                }
+                                bg={inputBg}
+                                color={textColor}
+                                border="none" // Remove default border
+                                borderRadius="xl"
+                                _placeholder={{ color: placeholderColor }}
                                 size="lg"
-                                bg={useColorModeValue("gray.600", "gray.700")}
-                                color={"white"}
-                                _hover={{
-                                    bg: useColorModeValue("gray.700", "gray.800"),
+                                height="55px"
+                                _hover={{ border: "none" }} // No border on hover
+                                _focus={{
+                                    borderWidth: "1px", // Fixed 1px border
+                                    borderStyle: "solid",
+                                    borderColor: inputBorder,
+                                    boxShadow: "none", // Remove focus shadow/glow
+                                    outline: "none", // Remove default outline
                                 }}
-                                onClick={handleLogin}
-                                isLoading={loading}
+                                transition="none" // Disable all transitions
+                            />
+                        </FormControl>
+                        <Button
+                            size="lg"
+                            bg={buttonBg}
+                            color={buttonTextColor}
+                            _hover={{ bg: buttonHoverBg }}
+                            onClick={handleLogin}
+                            isLoading={loading}
+                            height="55px"
+                            borderRadius="xl"
+                        >
+                            Đăng nhập
+                        </Button>
+                        <Text align={"center"} color={textColor}>
+                            <Link
+                                color={linkColor}
+                                onClick={() => dispatch(setAuthScreen("signup"))}
                             >
-                                Login
-                            </Button>
-                        </Stack>
-                        <Stack pt={6}>
-                            <Text align={"center"}>
-                                Don't have an account?{" "}
-                                <Link
-                                    color={"blue.400"}
-                                    onClick={() => dispatch(setAuthScreen("signup"))}
-                                >
-                                    Sign up
-                                </Link>
-                            </Text>
-                        </Stack>
+                                Đăng ký tài khoản mới
+                            </Link>
+                        </Text>
                     </Stack>
                 </Box>
             </Stack>
         </Flex>
     );
 }
+
+
+
+// loi bị luu mat khau view nhập dữ liệu không load mẫu mới mà load mẫu cũ
