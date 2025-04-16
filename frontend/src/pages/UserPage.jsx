@@ -170,8 +170,8 @@ const UserPage = () => {
             key={post._id}
             post={{
               _id: post._id,
-              Text: post.text,
-              Image: post.img,
+              text: post.text,     // KEEP LOWERCASE to match Post component
+              img: post.img,       // KEEP LOWERCASE to match Post component
               likes: post.likes || [],
               replies: post.replies || [],
               createdAt: post.createdAt

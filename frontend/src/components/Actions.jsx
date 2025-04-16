@@ -211,14 +211,15 @@ const Actions = ({ post }) => {
                             </Text>
                         </Flex>
                         
-                        <Box 
-                            p={1} 
-                            borderRadius="md" 
-                            bg={useColorModeValue("rgba(211, 211, 211, 0.3)", "rgba(180, 180, 180, 0.3)")} 
+                        <Box
+                            p={1}
+                            borderRadius="md"
+                            bg={useColorModeValue("rgba(211, 211, 211, 0.3)", "rgba(180, 180, 180, 0.3)")}
                             mb={4}
                         >
                             <Text fontSize="sm" color={useColorModeValue("dark", "white")}>
-                                Trả lời cho bài viết: {post.Text?.substring(0, 50)}{post.Text?.length > 50 ? "..." : ""}
+                                Trả lời cho bài viết: {post?.text?.substring(0, 50) || "[Không có nội dung]"}
+                                {post?.text?.length > 50 ? "..." : ""}
                             </Text>
                         </Box>
                         

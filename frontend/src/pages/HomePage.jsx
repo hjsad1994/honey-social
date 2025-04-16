@@ -66,13 +66,13 @@ const HomePage = () => {
                         key={post._id}
                         post={{
                             _id: post._id,
-                            Text: post.text,
-                            Image: post.img,
+                            text: post.text,     // KEEP LOWERCASE to match Post component
+                            img: post.img,       // KEEP LOWERCASE to match Post component
                             likes: post.likes || [],
                             replies: post.replies || [],
                             createdAt: post.createdAt
                         }}
-                        postedBy={post.postedBy}  // <- Changed from userId to postedBy
+                        postedBy={post.postedBy}
                     />
                 ))}
             </Box>
