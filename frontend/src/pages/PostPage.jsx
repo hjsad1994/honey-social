@@ -72,6 +72,23 @@ const PostPage = () => {
     fetchPost();
   }, [pid, showToast, navigate]);
 
+  // Add this function to refresh post data
+  const refreshPostData = async () => {
+    try {
+      const res = await fetch(`/api/posts/${pid}`);
+      const data = await res.json();
+      
+      if (data.error) {
+        showToast("Error", data.error, "error");
+        return;
+      }
+      
+      setPost(data);
+    } catch (error) {
+      showToast("Error", error.message, "error");
+    }
+  };
+
   // Add confirmDelete handler
   const confirmDelete = (e) => {
     e.preventDefault();
@@ -250,7 +267,7 @@ const PostPage = () => {
       )}
 
       <Flex gap={3} my={3}>
-        <Actions post={post} />
+        <Actions post={post} onReplyAdded={refreshPostData} />
       </Flex>
 
       <Divider my={4} />
