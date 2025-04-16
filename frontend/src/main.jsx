@@ -14,7 +14,7 @@ const styles = {
   global: (props) => ({
     body: {
       color: mode("gray.800", "whiteAlpha.900")(props),
-      bg: mode("gray.200", "#101010")(props),
+      bg: mode("whiteAlpha.300", "#101010")(props),
     },
   }),
 };
