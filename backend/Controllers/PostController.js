@@ -83,23 +83,80 @@ const getPost = async (req, res) => {
         console.log("error in getPost controller", err.message)
     }
 }
+
+// Updated deletePost function
 const deletePost = async (req, res) => {
-    let {profilePic} = req.body
+    const { imageUrl } = req.body;
+    
     try {
-        const post = await Post.findById(req.params.id)
+        // Find the post first
+        const post = await Post.findById(req.params.id);
+        
         if (!post) {
-            return res.status(404).json({ error: "post not found" })
+            return res.status(404).json({ error: "post not found" });
         }
+        
+        // Check authorization
         if (post.postedBy.toString() !== req.user._id.toString()) {
-            return res.status(401).json({ error: "user not authorized to delete post" })
+            return res.status(401).json({ error: "user not authorized to delete post" });
         }
-        await Post.findByIdAndDelete(req.params.id)
-        res.status(200).json({ error: "post deleted successfully" })
+        
+        // Delete image from Cloudinary if it exists
+        if (post.img && post.img.includes('cloudinary.com')) {
+            try {
+                // Extract the public ID from the Cloudinary URL
+                const publicId = extractPublicIdFromUrl(post.img);
+                
+                if (publicId) {
+                    console.log(`Deleting post image from Cloudinary: ${publicId}`);
+                    
+                    const result = await cloudinary.uploader.destroy(publicId);
+                    console.log("Cloudinary deletion result:", result);
+                }
+            } catch (cloudinaryError) {
+                console.log("Error deleting image from Cloudinary:", cloudinaryError.message);
+                // Continue with post deletion even if image deletion fails
+            }
+        }
+        
+        // Delete the post from database
+        await Post.findByIdAndDelete(req.params.id);
+        
+        res.status(200).json({ error: "post deleted successfully" });
     } catch (err) {
-        res.status(500).json({ error: err.message })
-        console.log("error in deletePost controller", err.message)
+        res.status(500).json({ error: err.message });
+        console.log("error in deletePost controller", err.message);
     }
-}
+};
+
+// Add this utility function to extract public ID from Cloudinary URL
+const extractPublicIdFromUrl = (url) => {
+    if (!url || !url.includes('cloudinary.com')) return null;
+    
+    try {
+        // Extract folder path and filename
+        const regex = /\/v\d+\/([^/]+\/[^.]+)/;
+        const match = url.match(regex);
+        
+        if (match && match[1]) {
+            return match[1];
+        }
+        
+        // Fallback approach: get everything after the last slash and before extension
+        const urlParts = url.split('/');
+        const filename = urlParts[urlParts.length - 1].split('.')[0];
+        
+        // Get folder name from URL
+        const folderMatch = url.match(/\/upload\/(?:v\d+\/)?(.+?)\/[^\/]+$/);
+        const folder = folderMatch ? folderMatch[1] : '';
+        
+        return folder ? `${folder}/${filename}` : filename;
+    } catch (error) {
+        console.error("Failed to extract public ID:", error);
+        return null;
+    }
+};
+
 const likeUnlikePost = async (req, res) => {
     try {
         const { id: postId } = req.params
@@ -163,4 +220,24 @@ const getFeedPosts = async (req, res) => {
         console.log("error in getFeedPosts controller", err.message)
     }
 }
-export { createPost, getPost, deletePost, likeUnlikePost, replyToPost, getFeedPosts }
+
+const getUserPosts = async (req, res) => {
+    const { username} = req.params
+    try {
+        const user = await User.findOne( { username })
+        if (!user) {
+            return res.status(404).json({ error: "user not found" })
+        }
+        const posts = await Post.find({ postedBy: user._id }).sort({ createdAt: -1 })
+        if (!posts) {
+            return res.status(404).json({ error: "posts not found" })
+        }
+        res.status(200).json(posts)
+
+
+
+    } catch (error) {
+        res.status(500).json({ error: error.message })
+    } 
+}
+export { createPost, getPost, deletePost, likeUnlikePost, replyToPost, getFeedPosts, getUserPosts }

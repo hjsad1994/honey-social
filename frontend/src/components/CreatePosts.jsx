@@ -23,9 +23,10 @@ import {
 } from "@chakra-ui/react";
 import { AddIcon } from '@chakra-ui/icons';
 import { BsImage } from 'react-icons/bs';
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import useImageUpload from '../hooks/useImageUpload';
 import useShowToast from '../hooks/useShowToast';
+import { addPost } from '../reducers/postReducer';
 
 const CreatePosts = () => {
     const { isOpen, onOpen, onClose } = useDisclosure();
@@ -36,6 +37,7 @@ const CreatePosts = () => {
     const showToast = useShowToast();
     const [loading, setLoading] = useState(false);
     const { colorMode } = useColorMode(); // Lấy giá trị colorMode (light hoặc dark)
+    const dispatch = useDispatch();
 
     // Add this line to get the current user from Redux store
     const currentUser = useSelector((state) => state.user.user);
@@ -80,6 +82,7 @@ const CreatePosts = () => {
 
         if (!postText.trim() && !imageBase64) {
             showToast("Error", "Vui lòng nhập nội dung hoặc thêm ảnh", "error");
+            setLoading(false); // Make sure to reset loading state
             return;
         }
 
@@ -90,9 +93,6 @@ const CreatePosts = () => {
                 text: postText,
                 img: imageBase64 || ""  // Use image if available
             };
-
-            // Set loading state if needed
-            // setIsLoading(true);
 
             // Make the API request
             const res = await fetch("/api/posts/create", {
@@ -107,29 +107,41 @@ const CreatePosts = () => {
 
             if (data.error && data.error !== "post created successfully") {
                 showToast("Error", data.error, "error");
+                setLoading(false); // Reset loading state on error
                 return;
             }
 
-            // Success! Show confirmation and reset form
-            showToast("Success", "Bài viết đã được đăng thành công", "success");
-            
-            // Reset form
-            setPostText("");
-            setRemainingChar(MAX_CHARS); // Reset giá trị remainingChar
-            resetImage();
-            onClose();
-
-            // Optional: Refresh the feed or navigate to the new post
-            // window.location.reload();
-            
+            // Success path - dispatch to Redux store
+            if (data && data.post) {
+                console.log("Received new post:", data.post);  // Debug log
+                
+                // Make sure the post object has all required fields
+                const newPost = {
+                    ...data.post,
+                    postedBy: currentUser._id,  // Ensure postedBy is set correctly
+                    likes: data.post.likes || [],
+                    replies: data.post.replies || []
+                };
+                
+                // Dispatch the complete post object
+                dispatch(addPost(newPost));
+                
+                // Show success message
+                showToast("Success", "Bài viết đã được đăng thành công", "success");
+                
+                // Reset form state
+                setPostText("");
+                resetImage();
+                
+                // Explicitly close the modal
+                handleCloseModal(); // Call handleCloseModal instead of onClose
+            }
         } catch (error) {
             console.error("Error creating post:", error);
             showToast("Error", "Không thể đăng bài, vui lòng thử lại sau", "error");
         } finally {
-
             setLoading(false);
         }
-
     };
 
     const handleCloseModal = () => {
