@@ -1,4 +1,4 @@
-import { Flex, Spinner, Text } from "@chakra-ui/react";
+import { Flex, Spinner, Text, Box, useColorModeValue } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import useShowToast from "../hooks/useShowToast";
 import Post from "../components/Post";
@@ -7,7 +7,8 @@ const HomePage = () => {
     const showToast = useShowToast();
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
-
+    const cardBg = useColorModeValue("white", "#161617");
+    const shadowColor = useColorModeValue("lg", "dark-lg");
     useEffect(() => {
         const getFeedPosts = async () => {
             try {
@@ -51,20 +52,30 @@ const HomePage = () => {
     // Render posts when available
     return (
         <>
-{posts.map((post) => (
-    <Post 
-        key={post._id} 
-        post={{
-            _id: post._id,
-            Text: post.text,
-            Image: post.img,
-            likes: post.likes || [],
-            replies: post.replies || [],
-            createdAt: post.createdAt
-        }} 
-        postedBy={post.postedBy}  // <- Changed from userId to postedBy
-    />
-))}
+            <Box
+                p={6}
+                borderRadius="xl"
+                bg={cardBg}
+                boxShadow={shadowColor}
+                transition="all 0.3s ease"
+            >
+
+
+                {posts.map((post) => (
+                    <Post
+                        key={post._id}
+                        post={{
+                            _id: post._id,
+                            Text: post.text,
+                            Image: post.img,
+                            likes: post.likes || [],
+                            replies: post.replies || [],
+                            createdAt: post.createdAt
+                        }}
+                        postedBy={post.postedBy}  // <- Changed from userId to postedBy
+                    />
+                ))}
+            </Box>
         </>
     );
 };

@@ -20,7 +20,7 @@ function App() {
       {/* Header nằm ngoài Container để có thể full width */}
       <Header />
       
-      <Container maxH="620wh">
+      <Container maxW="680px" px={{ base: 2, md: 4 }} >
         <Routes>
           <Route path="/" element={user ? <HomePage /> : <Navigate to="/auth" />} />
           <Route path="/auth" element={!user ? <AuthPage /> : <Navigate to="/" />} />
