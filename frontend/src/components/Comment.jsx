@@ -322,26 +322,60 @@ const Comment = ({ reply, postId, onDeleteReply }) => {
             </Flex>
 
             <Modal isOpen={isOpen} onClose={onClose} isCentered>
-                <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(5px)" />
-                <ModalContent bg={modalContentBg} borderRadius="lg" mx={4}>
-                    <ModalHeader>Xoá bình luận</ModalHeader>
-                    <ModalBody pb={6}>
-                        <Text>
-                            Bạn có chắc chắn muốn xoá bình luận này? Hành động này không thể hoàn tác.
-                        </Text>
+                <ModalOverlay bg="blackAlpha.600" backdropFilter="blur(5px)" />
+                <ModalContent
+                    bg={useColorModeValue("white", "black")}
+                    borderRadius="15px"
+                    mx={4}
+                    py={6}
+                    px={4}
+                    textAlign="center"
+                >
+                    <ModalHeader
+                        fontSize="lg"
+                        fontWeight="bold"
+                        p={0}
+                        mb={4}
+                        color={useColorModeValue("black", "white")}
+                        textAlign="center"
+                    >
+                        Xóa bình luận?
+                    </ModalHeader>
+                    <ModalBody
+                        fontSize="sm"
+                        color={useColorModeValue("gray.600", "gray.300")}
+                        p={0}
+                        mb={6}
+                    >
+                        Nếu xóa bình luận này, bạn sẽ không thể khôi phục được nữa.
                     </ModalBody>
-                    <ModalFooter gap={3}>
+                    <ModalFooter
+                        display="flex"
+                        justifyContent="space-between"
+                        p={0}
+                        w="100%"
+                    >
                         <Button
                             onClick={onClose}
-                            bg={cancelBtnBg}
-                            _hover={{ bg: cancelBtnHoverBg }}
+                            bg={useColorModeValue("gray.100", "gray.700")}
+                            color={useColorModeValue("black", "white")}
+                            _hover={{ bg: useColorModeValue("gray.200", "gray.600") }}
+                            w="48%"
+                            borderRadius="md"
                         >
                             Huỷ
                         </Button>
                         <Button
-                            colorScheme="red"
+                            bg={useColorModeValue("black", "white")}
+                            color={useColorModeValue("white", "black")}
+                            _hover={{
+                                bg: useColorModeValue("gray.800", "gray.200"),
+                            }}
                             onClick={handleDeleteComment}
                             isLoading={isDeleting}
+                            loadingText="Deleting..."
+                            w="48%"
+                            borderRadius="md"
                         >
                             Xoá
                         </Button>
