@@ -3,7 +3,7 @@ import fetch from 'node-fetch';
 
 export const sendChatMessage = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { message, userId } = req.body;
+    const { message, userId, name, bio  } = req.body;
 
     if (!message) {
       res.status(400).json({ error: 'Message is required.' });
@@ -17,12 +17,12 @@ export const sendChatMessage = async (req: Request, res: Response): Promise<void
       return;
     }
 
-    console.log('Sending data to webhook:', { message, userId });
+    console.log('Sending data to webhook:', { message, userId, name, bio });
 
     const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message, userId }),
+      body: JSON.stringify({ message, userId , name, bio }),
     });
 
     const data = (await response.json()) as { response?: string };

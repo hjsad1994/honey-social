@@ -9,6 +9,8 @@ import {
   IconButton,
   Avatar,
   Divider,
+  useColorModeValue,
+  useColorMode,
 } from '@chakra-ui/react';
 import { FiSend } from 'react-icons/fi';
 import { useSelector } from 'react-redux';
@@ -36,7 +38,26 @@ const ChatAI: React.FC = () => {
   const messageEndRef = useRef<HTMLDivElement>(null);
   const currentUser = useSelector((state: RootState) => state.user.user);
   const showToast = useShowToast();
+  const { colorMode } = useColorMode();
 
+  // Color mode values
+  const cardBg = useColorModeValue("white", "#161617");
+  const shadowColor = useColorModeValue("lg", "dark-lg");
+  const borderColor = useColorModeValue("blackAlpha.300", "whiteAlpha.200");
+  const textColor = useColorModeValue("gray.700", "gray.200");
+  const headingColor = useColorModeValue("gray.800", "white");
+  
+  const userMsgBg = useColorModeValue("blue.500", "blue.400");
+  const aiMsgBg = useColorModeValue("gray.100", "gray.700");
+  const aiMsgText = useColorModeValue("gray.800", "gray.100");
+  
+  const inputBg = useColorModeValue("gray.50", "gray.700");
+  const inputBorder = useColorModeValue("gray.300", "gray.600");
+  const buttonBg = useColorModeValue("blue.500", "blue.400");
+  const buttonHoverBg = useColorModeValue("blue.600", "blue.500");
+  
+  const timestampColor = useColorModeValue("gray.500", "gray.400");
+  
   // Scroll to bottom when messages change
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -68,6 +89,9 @@ const ChatAI: React.FC = () => {
         body: JSON.stringify({
           message: inputMessage,
           userId: currentUser?._id,
+          name: currentUser?.name || 'Anonymous', // Changed from name to username
+          bio: currentUser?.bio || '',
+          
         }),
       });
 
@@ -94,20 +118,23 @@ const ChatAI: React.FC = () => {
 
   return (
     <Box
-      p={4}
-      borderRadius="lg"
-      boxShadow="md"
-      bg="white"
-      borderWidth="1px"
+      p={{ base: 4, md: 6 }}
+      borderRadius="30px"
+      borderWidth="0.5px"
+      borderStyle="solid"
+      borderColor={borderColor}
+      bg={cardBg}
+      boxShadow={shadowColor}
+      transition="all 0.3s ease"
       height="600px"
       display="flex"
       flexDirection="column"
       overflow="hidden"
     >
-      <Text fontSize="xl" fontWeight="bold" mb={4}>
+      <Text fontSize="xl" fontWeight="bold" mb={4} color={headingColor}>
         Chat với AI
       </Text>
-      <Divider mb={4} />
+      <Divider mb={4} borderColor={borderColor} />
 
       <VStack
         flex="1"
@@ -125,18 +152,21 @@ const ChatAI: React.FC = () => {
             gap={2}
           >
             {!msg.isUser && (
-              <Avatar size="xs" name="AI" src="/ai-avatar.png" bg="blue.500" />
+              <Avatar size="xs" name="AI" src="/ai-avatar.png" bg={buttonBg} />
             )}
 
             <Box
               maxW="70%"
               p={3}
               borderRadius="lg"
-              bg={msg.isUser ? 'blue.500' : 'gray.100'}
-              color={msg.isUser ? 'white' : 'black'}
+              bg={msg.isUser ? userMsgBg : aiMsgBg}
+              color={msg.isUser ? 'white' : aiMsgText}
+              borderWidth={msg.isUser ? 0 : "1px"}
+              borderColor={msg.isUser ? "" : borderColor}
+              boxShadow="sm"
             >
               <Text>{msg.text}</Text>
-              <Text fontSize="xs" opacity={0.8} textAlign="right" mt={1}>
+              <Text fontSize="xs" opacity={0.8} textAlign="right" mt={1} color={msg.isUser ? "whiteAlpha.800" : timestampColor}>
                 {new Date(msg.timestamp).toLocaleTimeString()}
               </Text>
             </Box>
@@ -153,10 +183,10 @@ const ChatAI: React.FC = () => {
 
         {isLoading && (
           <Flex alignItems="center" gap={2}>
-            <Avatar size="xs" name="AI" src="/ai-avatar.png" bg="blue.500" />
-            <Box p={3} borderRadius="lg" bg="gray.100">
-              <Spinner size="sm" color="blue.500" mr={2} />
-              <Text fontSize="sm">Đang trả lời...</Text>
+            <Avatar size="xs" name="AI" src="/ai-avatar.png" bg={buttonBg} />
+            <Box p={3} borderRadius="lg" bg={aiMsgBg} borderWidth="1px" borderColor={borderColor}>
+              <Spinner size="sm" color={buttonBg} mr={2} />
+              <Text fontSize="sm" color={aiMsgText}>Đang trả lời...</Text>
             </Box>
           </Flex>
         )}
@@ -174,18 +204,25 @@ const ChatAI: React.FC = () => {
               handleSendMessage();
             }
           }}
-          bg="gray.100"
+          bg={inputBg}
+          borderColor={inputBorder}
           borderRadius="full"
           disabled={isLoading}
+          _hover={{ borderColor: buttonBg }}
+          _focus={{ borderColor: buttonBg, boxShadow: `0 0 0 1px ${colorMode === 'light' ? 'blue.500' : 'blue.400'}` }}
         />
         <IconButton
           aria-label="Send message"
           icon={<FiSend />}
-          colorScheme="blue"
+          bg={buttonBg}
+          color="white"
+          _hover={{ bg: buttonHoverBg }}
           borderRadius="full"
           onClick={handleSendMessage}
           isLoading={isLoading}
           isDisabled={!inputMessage.trim() || isLoading}
+          transition="all 0.2s"
+          boxShadow="sm"
         />
       </Flex>
     </Box>
