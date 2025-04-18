@@ -1,0 +1,6 @@
+{
+  "watch": ["server.ts", "controllers", "routes", "models", "middlewares"],
+  "ext": "ts,js,json",
+  "exec": "node --loader ts-node/esm server.ts",
+  "ignore": ["dist"]
+}
