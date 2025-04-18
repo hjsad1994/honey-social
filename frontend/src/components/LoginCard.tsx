@@ -35,36 +35,27 @@ const LoginCard: React.FC = () => {
     });
     const showToast = useShowToast();
 
-    const handleLogin = async (): Promise<void> => {
-        setLoading(true);
+    const handleLogin = async () => {
         try {
-            const res = await fetch("/api/users/login", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+            const response = await fetch('http://localhost:5000/api/users/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(inputs),
             });
-            const data = await res.json();
+
+            const data = await response.json();
+
             if (data.error) {
-                showToast("Error", data.error, "error");
+                showToast('Error', data.error, 'error');
                 return;
             }
-            
-            // Set user data in Redux store
-            dispatch(setUser(data));
-            
-            // Show success message
-            showToast("Success", "Đăng nhập thành công", "success");
-            
-            // Navigate to home page
-            navigate("/");
-            
-        } catch (error: unknown) {
-            const errorMessage = error instanceof Error ? error.message : "Unknown error";
-            showToast("Error", errorMessage, "error");
-        } finally {
-            setLoading(false);
+
+            localStorage.setItem('authToken', data.token); // Store the token in localStorage
+            dispatch(setUser(data.user)); // Save user info in Redux store
+            showToast('Success', 'Đăng nhập thành công', 'success');
+            navigate('/');
+        } catch (error: any) {
+            showToast('Error', error.message || 'Đã xảy ra lỗi khi đăng nhập', 'error');
         }
     };
 

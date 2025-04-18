@@ -1,9 +1,10 @@
-import { Flex, useColorMode, Image, Box, Icon, Text } from '@chakra-ui/react';
+import { Flex, useColorMode, Image, Box, Icon, Text, Button } from '@chakra-ui/react';
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { Link, useLocation } from 'react-router-dom';
 import { AddIcon } from '@chakra-ui/icons';
 import { useDisclosure } from '@chakra-ui/react';
+import { FiMessageSquare } from 'react-icons/fi';
 import CreatePosts from './CreatePosts';
 import { RootState } from '../store/store';
 
@@ -213,6 +214,13 @@ const Header: React.FC = () => {
                         </Box>
                     </Link>
                 )}
+
+                {/* Chat AI Button */}
+                <Link to="/chat">
+                    <Button leftIcon={<FiMessageSquare />} variant="ghost">
+                        Chat AI
+                    </Button>
+                </Link>
             </Box>
 
             {/* Modal CreatePost */}

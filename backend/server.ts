@@ -4,6 +4,8 @@ import connectDB from './db/connectDB.js'
 import cookieParser from 'cookie-parser'
 import userRoutes from './routes/userRoutes.js'
 import postRoutes from './routes/postRoutes.js'
+import chatRoutes from './routes/chatRoutes.js'
+import cors from 'cors';
 
 import { v2 as cloudinary } from 'cloudinary'
 
@@ -23,8 +25,15 @@ app.use(express.json({ limit: '50mb' })) // to parse json data in the req.body
 app.use(express.urlencoded({ extended: true })) // to parse form data in the req.body
 app.use(cookieParser()) // to parse cookies in the req.cookies
 
+// Enable CORS for all origins
+app.use(cors({
+  origin: 'http://localhost:3000', // Allow requests from your frontend
+  credentials: true, // Allow cookies if needed
+}));
+
 // routes
 app.use("/api/users", userRoutes)
 app.use("/api/posts", postRoutes)
+app.use('/api/chat', chatRoutes)
 
 app.listen(PORT, () => console.log(`server started at http://localhost:${PORT}`))

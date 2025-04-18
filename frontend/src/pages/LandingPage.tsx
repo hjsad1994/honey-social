@@ -497,7 +497,7 @@ const LandingPage: React.FC = () => {
               overflow="hidden"
             >
               <Image 
-                src="/light-logo.svg" 
+                src="/honey-logo.png" 
                 alt="Honey Social Platform" 
                 fallbackSrc="https://via.placeholder.com/800x600?text=Honey+Social"
                 objectFit="cover"

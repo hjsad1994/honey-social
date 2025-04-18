@@ -18,37 +18,52 @@ interface JwtPayload {
 
 const protectRoute = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const token = req.cookies.jwt;
+        let token: string | undefined;
+
+        // Check for token in cookies
+        if (req.cookies && req.cookies.jwt) {
+            token = req.cookies.jwt;
+        }
+
+        // Check for token in Authorization header
+        if (!token && req.headers.authorization?.startsWith("Bearer ")) {
+            token = req.headers.authorization.split(" ")[1];
+        }
+
         if (!token) {
-            res.status(401).json({ error: "Unauthorized - please login" });
+            console.log('No token provided');
+            res.status(401).json({ error: "Unauthorized - Token not provided" });
             return;
         }
-        
+
         // Verify token
         const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as JwtPayload;
-        
+        console.log('Decoded token:', decoded);
+
         // Check if user exists
         const user = await User.findById(decoded.userId).select("-password");
         if (!user) {
-            res.status(401).json({ error: "Unauthorized - user not found" });
+            console.log('User not found for token');
+            res.status(401).json({ error: "Unauthorized - User not found" });
             return;
         }
-        
+
         // Set user in request
         req.user = user;
         next();
     } catch (err: any) {
-        // Handle specific JWT errors
         if (err.name === 'JsonWebTokenError') {
+            console.log('Invalid token');
             res.status(401).json({ error: "Invalid token" });
             return;
         } else if (err.name === 'TokenExpiredError') {
+            console.log('Token expired');
             res.status(401).json({ error: "Token expired" });
             return;
         }
-        
-        res.status(500).json({ error: err.message });
-        console.log("Error in protectRoute middleware:", err.message);
+
+        console.error("Error in protectRoute middleware:", err.message);
+        res.status(500).json({ error: "Internal server error" });
     }
 };
 
