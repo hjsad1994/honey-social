@@ -26,24 +26,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../store/store';
 import useShowToast from '../hooks/useShowToast';
 import { Navigate } from 'react-router-dom';
-
-interface Report {
-  _id: string;
-  postId: {
-    _id: string;
-    text: string;
-    img?: string;
-  };
-  postContent: string;
-  status: 'pending' | 'resolved';
-  resolution: string;
-  moderationResult: {
-    flagged: boolean;
-    categories: Record<string, boolean>;
-    category_scores: Record<string, number>;
-  };
-  createdAt: string;
-}
+import { Report } from '../types/types';
 
 const AdminPage: React.FC = () => {
   const [reports, setReports] = useState<Report[]>([]);

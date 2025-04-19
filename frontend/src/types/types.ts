@@ -10,6 +10,7 @@ export interface User {
   createdAt: string;
   updatedAt: string;
   isVerified?: boolean;
+  isAdmin?: boolean;
 }
 
 export interface Post {
@@ -32,4 +33,24 @@ export interface Reply {
   username?: string;
   likes: string[];
   createdAt: Date;
+}
+
+export interface Report {
+  _id: string;
+  postId: {
+    _id: string;
+    text: string;
+    img?: string;
+    postedBy: string;  // Add this missing field
+  };
+  postContent: string;
+  status: 'pending' | 'resolved';
+  resolution: string;
+  severity: 'low' | 'medium' | 'high';  // Add this missing field
+  moderationResult: {
+    flagged: boolean;
+    categories: Record<string, boolean>;
+    category_scores: Record<string, number>;
+  };
+  createdAt: string;
 }
