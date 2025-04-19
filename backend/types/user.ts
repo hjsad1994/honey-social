@@ -13,4 +13,5 @@ export interface IUser extends Document {
   isFrozen: boolean;
   createdAt: Date;
   updatedAt: Date;
+  isAdmin?: boolean;
 }

@@ -5,6 +5,8 @@ import { Request, Response } from "express";
 import { Types } from "mongoose";
 import { IPost, IReply } from "../types/post.js";
 import { CloudinaryUploadOptions, CloudinaryUploadResponse } from "../types/cloudinary.js";
+import { checkContent, analyzeModerationResult } from './moderationController.js';
+import Report from '../models/reportModel.js';
 
 // Utility function to extract public ID from Cloudinary URL
 const extractPublicIdFromUrl = (url: string): string | null => {
@@ -99,7 +101,19 @@ const createPost = async (req: Request, res: Response): Promise<void> => {
         // Create and save post
         const newPost = await Post.create(postData);
         await newPost.save();
-        
+
+        // Kiểm duyệt nội dung bài viết
+        if (text && text.trim()) {
+            // Chạy bất đồng bộ để không làm chậm phản hồi API
+            // Thêm kiểm tra tồn tại của newPost._id
+            if (newPost && newPost._id) {
+                const postedByUserId = req.user?._id.toString() || newPost.postedBy.toString();
+                console.log("Sending moderation check with postedBy:", postedByUserId);
+                analyzeModerationResult(text, newPost._id.toString(), postedByUserId)
+                    .catch(err => console.error("Lỗi phân tích nội dung:", err));
+            }
+        }
+
         res.status(201).json({ error: "post created successfully", post: newPost });
     } catch (err: any) {
         res.status(500).json({ error: err.message });

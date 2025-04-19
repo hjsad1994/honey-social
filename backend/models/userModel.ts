@@ -1,7 +1,8 @@
 import mongoose, { Schema } from "mongoose";
 import { IUser } from "../types/user.js";
 
-const userSchema = new Schema<IUser>(
+// Define the schema shape without explicitly binding to IUser yet
+const userSchema = new Schema(
     {
         name: {
             type: String,
@@ -42,12 +43,17 @@ const userSchema = new Schema<IUser>(
             type: Boolean,
             default: false,
         },
+        isAdmin: {
+            type: Boolean,
+            default: false,
+        },
     },
     {
         timestamps: true,
     }
 );
 
+// Then create the model with the interface
 const User = mongoose.model<IUser>("User", userSchema);
 
 export default User;

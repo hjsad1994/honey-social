@@ -130,6 +130,7 @@ const loginUser = async (req: Request, res: Response): Promise<void> => {
             username: user.username,
             bio: user.bio,
             profilePic: user.profilePic,
+            isAdmin: user.isAdmin, // Make sure this field is included
         });
     } catch (err: any) {
         res.status(500).json({ error: err.message });

@@ -1,5 +1,8 @@
 {
   "devDependencies": {
     "@types/cookie-parser": "^1.4.8"
+  },
+  "dependencies": {
+    "ngrok": "^5.0.0-beta.2"
   }
 }
