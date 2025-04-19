@@ -6,8 +6,13 @@ import {
     Portal, useColorModeValue,
     Modal, ModalOverlay, ModalContent, ModalHeader,
     ModalFooter, ModalBody, Button, useDisclosure,
-    Tooltip
+    Tooltip,
+    Radio,
+    RadioGroup,
+    Textarea,
+    VStack
 } from '@chakra-ui/react';
+import { FiFlag } from 'react-icons/fi';
 import { useSelector, useDispatch } from 'react-redux';
 import { deletePost } from '../reducers/postReducer';
 import Actions from './Actions';
@@ -69,6 +74,10 @@ const Post = memo(({ post }: PostProps) => {
     const [postUser, setPostUser] = useState<User | null>(null);
     const [isDeleting, setIsDeleting] = useState<boolean>(false);
     const { isOpen, onOpen, onClose } = useDisclosure();
+    const [isReportDialogOpen, setIsReportDialogOpen] = useState<boolean>(false);
+    const [reportReason, setReportReason] = useState<string>("spam");
+    const [customReason, setCustomReason] = useState<string>("");
+    const [isReporting, setIsReporting] = useState<boolean>(false);
     
     const showToast = useShowToast();
     const navigate = useNavigate();
@@ -90,10 +99,8 @@ const Post = memo(({ post }: PostProps) => {
     const deleteBtnBg = useColorModeValue("black", "white");
     const deleteBtnColor = useColorModeValue("white", "black");
     const deleteBtnHoverBg = useColorModeValue("gray.800", "gray.200");
-    // const borderColor = useColorModeValue("gray.light", "gray.dark");
+    const inputBg = useColorModeValue("white", "gray.800");
     const postTextColor = useColorModeValue("gray.800", "gray.100");
-    // Add this pre-computed value for hover background
-    // const hoverBgColor = useColorModeValue("gray.50", "gray.800");
 
     // Effects and callbacks
     useEffect(() => {
@@ -179,6 +186,52 @@ const Post = memo(({ post }: PostProps) => {
                 showToast("Error", "Không thể sao chép liên kết", "error");
                 console.error("Copy failed:", error);
             });
+    };
+
+    const openReportDialog = (e: React.MouseEvent): void => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsReportDialogOpen(true);
+    };
+
+    const handleReport = async (): Promise<void> => {
+        if (reportReason === "other" && !customReason.trim()) {
+            showToast("Lỗi", "Vui lòng nhập lý do báo cáo", "error");
+            return;
+        }
+
+        setIsReporting(true);
+        try {
+            const res = await fetch('/api/moderation/report', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    credentials: 'include',
+                },
+                body: JSON.stringify({
+                    postId: post._id,
+                    reason: reportReason, // Luôn gửi lựa chọn gốc (kể cả "other")
+                    customReason: reportReason === "other" ? customReason : undefined, // Chỉ gửi khi chọn "other"
+                    content: post.text
+                }),
+            });
+
+            const data = await res.json();
+
+            if (data.error) {
+                showToast("Lỗi", data.error, "error");
+            } else {
+                showToast("Thành công", "Cảm ơn bạn đã báo cáo bài viết này", "success");
+                setIsReportDialogOpen(false);
+                setReportReason("spam");
+                setCustomReason("");
+            }
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : "Lỗi không xác định";
+            showToast("Lỗi", errorMessage, "error");
+        } finally {
+            setIsReporting(false);
+        }
     };
 
     // Determine if current user is the post author
@@ -285,6 +338,15 @@ const Post = memo(({ post }: PostProps) => {
                                             >
                                                 Sao chép liên kết
                                             </MenuItem>
+                                            <MenuItem
+                                                bg={menuItemBg}
+                                                color={copyLinkText}
+                                                _hover={{ bg: copyLinkHoverBg }}
+                                                onClick={openReportDialog}
+                                            >
+                                                <FiFlag style={{ marginRight: '8px' }} />
+                                                Báo cáo bài viết
+                                            </MenuItem>
                                         </MenuList>
                                     </Portal>
                                 </Menu>
@@ -376,6 +438,84 @@ const Post = memo(({ post }: PostProps) => {
                             borderRadius="md"
                         >
                             Xoá
+                        </Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
+
+            <Modal isOpen={isReportDialogOpen} onClose={() => setIsReportDialogOpen(false)} isCentered>
+                <ModalOverlay bg="blackAlpha.600" backdropFilter="blur(5px)" />
+                <ModalContent
+                    bg={modalContentBg}
+                    borderRadius="15px"
+                    mx={4}
+                    py={6}
+                    px={4}
+                >
+                    <ModalHeader
+                        fontSize="lg"
+                        fontWeight="bold"
+                        p={0}
+                        mb={4}
+                        color={modalHeaderColor}
+                        textAlign="center"
+                    >
+                        Báo cáo bài viết
+                    </ModalHeader>
+                    <ModalBody fontSize="sm" color={modalBodyColor} p={0} mb={4}>
+                        <Text mb={4}>Vui lòng chọn lý do bạn báo cáo bài viết này:</Text>
+                        
+                        <RadioGroup value={reportReason} onChange={setReportReason} mb={5}>
+                            <VStack align="flex-start" spacing={3}>
+                                <Radio value="spam">Spam hoặc quảng cáo</Radio>
+                                <Radio value="violence">Bạo lực hoặc nguy hiểm</Radio>
+                                <Radio value="hate">Ngôn từ thù địch</Radio>
+                                <Radio value="harassment">Quấy rối hoặc bắt nạt</Radio>
+                                <Radio value="adult">Nội dung người lớn</Radio>
+                                <Radio value="other">Khác</Radio>
+                            </VStack>
+                        </RadioGroup>
+                        
+                        {reportReason === "other" && (
+                            <Textarea
+                                value={customReason}
+                                onChange={(e) => setCustomReason(e.target.value)}
+                                placeholder="Mô tả lý do báo cáo..."
+                                size="md"
+                                resize="vertical"
+                                minHeight="100px"
+                                focusBorderColor="blue.500"
+                                bg={inputBg}
+                                mt={2}
+                            />
+                        )}
+                    </ModalBody>
+                    <ModalFooter
+                        display="flex"
+                        justifyContent="space-between"
+                        p={0}
+                        w="100%"
+                    >
+                        <Button
+                            onClick={() => setIsReportDialogOpen(false)}
+                            variant="outline"
+                            color={cancelBtnColor}
+                            w="48%"
+                            borderRadius="md"
+                        >
+                            Huỷ
+                        </Button>
+                        <Button
+                            bg="red.500"
+                            color="white"
+                            _hover={{ bg: "red.600" }}
+                            onClick={handleReport}
+                            isLoading={isReporting}
+                            loadingText="Đang gửi..."
+                            w="48%"
+                            borderRadius="md"
+                        >
+                            Báo cáo
                         </Button>
                     </ModalFooter>
                 </ModalContent>

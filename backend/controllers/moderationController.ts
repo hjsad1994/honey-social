@@ -93,6 +93,7 @@ export const analyzeModerationResult = async (text: string, postId: string, post
         postId: post._id,
         postContent: text,
         reportedBy: 'system',
+        reportedByUsername: 'Hệ thống tự động', // Thêm trường này
         moderationResult: result,
         severity: severity
       });
@@ -152,6 +153,7 @@ export const checkContentRoute = async (req: Request, res: Response): Promise<vo
             postId: post._id,
             postContent: post.text || "",
             reportedBy: 'system',
+            reportedByUsername: 'Hệ thống tự động',
             moderationResult: {
               flagged: req.body.flagged,
               categories: req.body.categories,
@@ -265,5 +267,67 @@ export const handleReport = async (req: Request, res: Response): Promise<void> =
   } catch (error: any) {
     console.error('Error in handleReport:', error);
     res.status(500).json({ error: 'Internal server error.' });
+  }
+};
+
+export const createUserReport = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { postId, reason, content, customReason } = req.body;
+    
+    // Các validation checks...
+
+    // Tìm bài viết
+    const post = await Post.findById(postId);
+    if (!post) {
+      res.status(404).json({ error: 'Không tìm thấy bài viết.' });
+      return;
+    }
+
+    // Lưu thêm thông tin username của người báo cáo
+    let reporterInfo = {
+      id: 'system',
+      username: 'Hệ thống tự động'
+    };
+    
+    if (req.user) {
+      reporterInfo = {
+        id: req.user._id.toString(),
+        username: req.user.username || 'Unknown user'
+      };
+    }
+
+    // Xác định mức độ nghiêm trọng dựa trên loại báo cáo
+    let severity = 'medium';
+    if (['violence', 'hate'].includes(reason)) {
+      severity = 'high';
+    } else if (['spam'].includes(reason)) {
+      severity = 'low';
+    }
+    
+    // Tạo báo cáo mới với thông tin người báo cáo đầy đủ
+    const newReport = new Report({
+      postId: post._id,
+      postContent: content || post.text || "",
+      reportedBy: reporterInfo.id,
+      reportedByUsername: reporterInfo.username, // Thêm trường này vào model Report
+      reason: reason === "other" ? customReason : reason,
+      severity: severity,
+      status: 'pending',
+      moderationResult: {
+        flagged: true,
+        categories: { 
+          [reason]: true
+        },
+        source: reporterInfo.id === 'system' ? 'system' : 'user-report',
+        userDescription: reason === "other" ? customReason : undefined
+      }
+    });
+    
+    await newReport.save();
+    
+    res.status(201).json({ success: true, message: 'Báo cáo đã được gửi thành công.' });
+  } catch (error: any) {
+    console.error('Lỗi trong createUserReport:', error);
+    res.status(500).json({ error: 'Lỗi máy chủ: ' + error.message });
   }
 };

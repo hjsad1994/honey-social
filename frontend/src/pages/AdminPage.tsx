@@ -152,6 +152,7 @@ const AdminPage: React.FC = () => {
               <Tr>
                 <Th>Nội dung</Th>
                 <Th>Vi phạm</Th>
+                <Th>Người báo cáo</Th>  {/* Thêm cột này */}
                 <Th>Ngày báo cáo</Th>
                 <Th>Trạng thái</Th>
                 <Th>Thao tác</Th>
@@ -182,6 +183,13 @@ const AdminPage: React.FC = () => {
                     ) : (
                       <Text fontSize="sm" color="gray.500">No categories data</Text>
                     )}
+                  </Td>
+                  <Td>
+                    <Badge 
+                      colorScheme={report.reportedBy === 'system' ? 'blue' : 'purple'}
+                    >
+                      {report.reportedByUsername || (report.reportedBy === 'system' ? 'Hệ thống tự động' : 'Người dùng')}
+                    </Badge>
                   </Td>
                   <Td>{new Date(report.createdAt).toLocaleDateString()}</Td>
                   <Td>
@@ -244,6 +252,14 @@ const AdminPage: React.FC = () => {
             <AlertDialogBody>
               {selectedReport && (
                 <>
+                  <Text fontWeight="bold" mb={2}>Người báo cáo:</Text>
+                  <Badge 
+                    mb={4} 
+                    colorScheme={selectedReport.reportedBy === 'system' ? 'blue' : 'purple'}
+                  >
+                    {selectedReport.reportedByUsername || (selectedReport.reportedBy === 'system' ? 'Hệ thống tự động' : 'Người dùng')}
+                  </Badge>
+                  
                   <Text fontWeight="bold" mb={2}>Nội dung:</Text>
                   <Text mb={4}>{selectedReport.postContent}</Text>
                   
