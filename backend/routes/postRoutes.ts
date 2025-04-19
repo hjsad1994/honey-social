@@ -10,7 +10,7 @@ import {
   likeUnlikeReply, 
   deleteReply 
 } from '../controllers/PostController.js';
-import protectRoute from '../middlewares/protectRoute.js';
+import {protectRoute} from '../middlewares/protectRoute.js';
 
 const router: Router = express.Router();
 

@@ -1,4 +1,5 @@
 import User from "../models/userModel.js";
+import Report from "../models/reportModel.js";
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from 'express';
 import { IUser } from '../types/user.js';
@@ -16,7 +17,7 @@ interface JwtPayload {
     userId: string;
 }
 
-const protectRoute = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const protectRoute = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
         const token = req.cookies.jwt;
         if (!token) {
@@ -52,4 +53,29 @@ const protectRoute = async (req: Request, res: Response, next: NextFunction): Pr
     }
 };
 
-export default protectRoute;
+export const isAdmin = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    if (!req.user?.isAdmin) {
+        res.status(403).json({ error: "Forbidden: Admin access required" });
+        return;
+    }
+    next();
+};
+
+export const getAllReports = async (req: Request, res: Response): Promise<void> => {
+  try {
+    // Kiểm tra quyền admin
+    if (!req.user?.isAdmin) {
+      res.status(403).json({ error: "Forbidden: Admin access required" });
+      return;
+    }
+    
+    const reports = await Report.find()
+      .sort({ createdAt: -1 })
+      .populate('postId');
+      
+    res.status(200).json(reports);
+  } catch (error: any) {
+    console.error('Error in getAllReports:', error);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+};

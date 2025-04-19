@@ -63,7 +63,7 @@ const ChatAI: React.FC = () => {
     messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSendMessage = async () => {
+  const handleSendMessage = async (): Promise<void> => {
     if (!inputMessage.trim()) return;
 
     const userMessage: Message = {
@@ -78,20 +78,18 @@ const ChatAI: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const token = localStorage.getItem('authToken'); // Retrieve token from localStorage
-
-      const response = await fetch('http://localhost:5000/api/chat/send', {
+      // Use a relative URL and include credentials
+      const response = await fetch('/api/chat/send', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`, // Include the token in the Authorization header
         },
+        credentials: 'include', // <-- This ensures cookies are sent
         body: JSON.stringify({
           message: inputMessage,
           userId: currentUser?._id,
-          name: currentUser?.name || 'Anonymous', // Changed from name to username
+          name: currentUser?.name || 'Anonymous',
           bio: currentUser?.bio || '',
-          
         }),
       });
 
